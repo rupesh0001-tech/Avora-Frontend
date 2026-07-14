@@ -1,208 +1,194 @@
-import { useState, useEffect } from "react";
-import { useAuth, useUser } from "@clerk/react";
-import axios from "axios";
-import { CheckCircle, AlertCircle, Database, ShieldCheck, Mail, MapPin, Globe } from "lucide-react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { Clock, User, Video, MapPin, Copy, ExternalLink, Plus, Search, MoreHorizontal, Check } from "lucide-react";
 
-interface DBUser {
+interface EventType {
   id: string;
-  email: string;
-  firstName: string | null;
-  lastName: string | null;
-  imageUrl: string | null;
-  timezone: string;
-  locale: string;
-  createdAt: string;
+  title: string;
+  duration: number;
+  locationType: "Video" | "In-Person";
+  locationDetails: string;
+  price: number;
+  isActive: boolean;
+  slug: string;
 }
 
 export default function DashboardPage() {
-  const { user: clerkUser } = useUser();
-  const { getToken } = useAuth();
-  const [dbUser, setDbUser] = useState<DBUser | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  
+  const [eventTypes, setEventTypes] = useState<EventType[]>([
+    {
+      id: "1",
+      title: "15 Minute Discovery Call",
+      duration: 15,
+      locationType: "Video",
+      locationDetails: "Google Meet",
+      price: 0,
+      isActive: true,
+      slug: "15-min",
+    },
+    {
+      id: "2",
+      title: "30 Minute Strategy Session",
+      duration: 30,
+      locationType: "Video",
+      locationDetails: "Zoom",
+      price: 50,
+      isActive: true,
+      slug: "30-min",
+    },
+    {
+      id: "3",
+      title: "60 Minute Project Consultation",
+      duration: 60,
+      locationType: "In-Person",
+      locationDetails: "Local Coffee Shop",
+      price: 120,
+      isActive: false,
+      slug: "60-min",
+    },
+  ]);
 
-  const fetchUserData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const token = await getToken();
-      
-      const response = await axios.get("http://localhost:5001/api/auth/me", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      setDbUser(response.data.user);
-    } catch (err: any) {
-      console.error("Error fetching user from backend:", err);
-      setError(
-        err.response?.data?.error || 
-        "Failed to connect to the backend server. Make sure your backend app is running at port 5001."
-      );
-    } finally {
-      setLoading(false);
-    }
+  const handleToggleActive = (id: string) => {
+    setEventTypes(
+      eventTypes.map((et) =>
+        et.id === id ? { ...et, isActive: !et.isActive } : et
+      )
+    );
   };
 
-  useEffect(() => {
-    fetchUserData();
-  }, []);
+  const handleCopyLink = (id: string, slug: string) => {
+    const link = `${window.location.origin}/book/alex-rivera/${slug}`;
+    navigator.clipboard.writeText(link);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const filteredEventTypes = eventTypes.filter((et) =>
+    et.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
-    <div className="space-y-8">
-      {/* Welcome Card */}
-      <div className="bg-canvas border border-hairline rounded-lg p-6 flex flex-col md:flex-row items-center gap-6 justify-between shadow-sm">
-        <div className="flex items-center gap-4 text-left">
-          {clerkUser?.imageUrl ? (
-            <img
-              src={clerkUser.imageUrl}
-              alt="Clerk Profile"
-              className="h-16 w-16 rounded-full border border-hairline object-cover"
-            />
-          ) : (
-            <div className="h-16 w-16 rounded-full bg-surface-card flex items-center justify-center font-bold text-xl text-ink">
-              {clerkUser?.firstName?.[0] || clerkUser?.emailAddresses?.[0]?.emailAddress?.[0]?.toUpperCase()}
-            </div>
-          )}
-          <div>
-            <h1 className="font-cal-sans text-2xl font-bold text-ink">
-              Welcome, {clerkUser?.firstName || "Scheduler"}!
-            </h1>
-            <p className="text-sm text-muted">
-              Configure your events, check availability, and test integrations.
-            </p>
-          </div>
+    <div className="space-y-6">
+      {/* Search and Action Bar */}
+      <div className="flex flex-col sm:flex-row gap-4 justify-between items-stretch sm:items-center bg-canvas p-4 rounded-xl border border-hairline shadow-sm">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+          <input
+            type="text"
+            placeholder="Search event types..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-hairline rounded-lg text-sm bg-surface-soft focus:outline-none focus:border-brand-accent transition-colors"
+          />
         </div>
-
-        <div className="flex items-center gap-3">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-            <ShieldCheck className="h-3.5 w-3.5" /> Authenticated via Clerk
-          </span>
-        </div>
+        <button className="flex items-center justify-center gap-2 bg-primary text-white text-sm font-semibold px-4 py-2.5 rounded-lg hover:bg-primary-active transition-all cursor-pointer">
+          <Plus className="w-4 h-4" />
+          Create Event Type
+        </button>
       </div>
 
-      {/* Connection & Synchronization State */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* PostgreSQL Database Sync */}
-        <div className="lg:col-span-2 bg-canvas border border-hairline rounded-lg p-6 text-left shadow-sm flex flex-col justify-between">
-          <div>
-            <div className="flex justify-between items-center mb-6">
-              <div className="flex items-center gap-2.5">
-                <Database className="h-5 w-5 text-ink" />
-                <h3 className="font-cal-sans text-lg font-bold text-ink">
-                  PostgreSQL Local Sync
-                </h3>
+      {/* Grid of Event Types */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredEventTypes.map((et) => (
+          <div
+            key={et.id}
+            className={`bg-canvas border rounded-xl overflow-hidden shadow-sm transition-all flex flex-col justify-between ${
+              et.isActive ? "border-hairline" : "border-hairline opacity-75"
+            }`}
+          >
+            {/* Top Bar with status & action dropdown */}
+            <div className="p-6 border-b border-hairline flex-1">
+              <div className="flex justify-between items-start mb-4">
+                <span className="text-xs font-semibold text-muted bg-surface-soft px-2.5 py-1 rounded-full border border-hairline">
+                  {et.duration} mins
+                </span>
+                
+                {/* Active Toggle Switch */}
+                <button
+                  onClick={() => handleToggleActive(et.id)}
+                  className={`w-10 h-6 rounded-full p-0.5 transition-colors focus:outline-none cursor-pointer ${
+                    et.isActive ? "bg-brand-accent" : "bg-hairline"
+                  }`}
+                  aria-label="Toggle Active Status"
+                >
+                  <div
+                    className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform ${
+                      et.isActive ? "translate-x-4" : "translate-x-0"
+                    }`}
+                  />
+                </button>
               </div>
-              <button
-                onClick={fetchUserData}
-                className="text-xs text-muted hover:text-ink transition-colors border border-hairline px-3 py-1.5 rounded-md font-semibold"
+
+              {/* Title & Price */}
+              <h3 className="font-cal-sans text-lg font-bold text-ink mb-1">
+                {et.title}
+              </h3>
+              <p className="text-sm font-semibold text-brand-accent mb-4">
+                {et.price > 0 ? `$${et.price}.00` : "Free"}
+              </p>
+
+              {/* Meeting Meta details */}
+              <div className="space-y-2 text-xs text-muted">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>1-on-1 • {et.duration} min session</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {et.locationType === "Video" ? (
+                    <Video className="w-3.5 h-3.5" />
+                  ) : (
+                    <MapPin className="w-3.5 h-3.5" />
+                  )}
+                  <span>
+                    {et.locationType} ({et.locationDetails})
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="bg-surface-soft/50 border-t border-hairline px-6 py-3.5 flex items-center justify-between">
+              <Link
+                to={`/book/alex-rivera/${et.slug}`}
+                className="text-xs font-semibold text-muted hover:text-ink flex items-center gap-1.5 transition-colors"
               >
-                Refresh Sync
+                <ExternalLink className="w-3.5 h-3.5" />
+                Preview page
+              </Link>
+              <button
+                onClick={() => handleCopyLink(et.id, et.slug)}
+                className={`text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
+                  copiedId === et.id ? "text-green-600" : "text-muted hover:text-brand-accent"
+                }`}
+              >
+                {copiedId === et.id ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5" />
+                    Copy link
+                  </>
+                )}
               </button>
             </div>
-
-            {loading ? (
-              <div className="py-8 flex justify-center items-center">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-              </div>
-            ) : error ? (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 flex items-start gap-3">
-                <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="font-semibold text-sm">Sync Error</p>
-                  <p className="text-xs mt-1 leading-relaxed">{error}</p>
-                </div>
-              </div>
-            ) : dbUser ? (
-              <div className="space-y-6">
-                <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 mt-0.5 flex-shrink-0 text-emerald-600" />
-                  <div>
-                    <p className="font-semibold text-sm">Synchronized Successfully!</p>
-                    <p className="text-xs mt-0.5 opacity-90">
-                      Your session token was verified, and your profile is saved in our local PostgreSQL database.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div className="flex items-center gap-3 p-3 bg-surface-soft border border-hairline rounded-lg">
-                    <Database className="h-4 w-4 text-muted" />
-                    <div>
-                      <p className="text-[10px] uppercase font-bold tracking-wider text-muted">Internal ID</p>
-                      <p className="font-semibold text-ink truncate max-w-[180px]">{dbUser.id}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 p-3 bg-surface-soft border border-hairline rounded-lg">
-                    <Mail className="h-4 w-4 text-muted" />
-                    <div>
-                      <p className="text-[10px] uppercase font-bold tracking-wider text-muted">Primary Email</p>
-                      <p className="font-semibold text-ink truncate max-w-[180px]">{dbUser.email}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 p-3 bg-surface-soft border border-hairline rounded-lg">
-                    <MapPin className="h-4 w-4 text-muted" />
-                    <div>
-                      <p className="text-[10px] uppercase font-bold tracking-wider text-muted">Timezone</p>
-                      <p className="font-semibold text-ink">{dbUser.timezone}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 p-3 bg-surface-soft border border-hairline rounded-lg">
-                    <Globe className="h-4 w-4 text-muted" />
-                    <div>
-                      <p className="text-[10px] uppercase font-bold tracking-wider text-muted">Locale</p>
-                      <p className="font-semibold text-ink">{dbUser.locale.toUpperCase()}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : null}
           </div>
-
-          <div className="mt-6 pt-4 border-t border-hairline text-xs text-muted">
-            Profile updates made inside Clerk will sync to this database instantly using our Lazy Sync mechanism.
-          </div>
-        </div>
-
-        {/* Sidebar Info card */}
-        <div className="bg-canvas border border-hairline rounded-lg p-6 text-left shadow-sm flex flex-col justify-between">
-          <div>
-            <h3 className="font-cal-sans text-lg font-bold text-ink mb-4">
-              Avora Quick Links
-            </h3>
-            <p className="text-sm text-muted mb-6">
-              Manage your Clerk settings or view user roles dynamically.
-            </p>
-
-            <div className="space-y-3">
-              <a
-                href="https://dashboard.clerk.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex w-full justify-center bg-primary hover:bg-primary-active text-white text-sm font-semibold py-2.5 rounded-md transition-all"
-              >
-                Go to Clerk Dashboard
-              </a>
-              <a
-                href="https://clerk.com/docs"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex w-full justify-center border border-hairline hover:bg-surface-soft text-ink text-sm font-semibold py-2.5 rounded-md transition-all"
-              >
-                Clerk Documentation
-              </a>
-            </div>
-          </div>
-
-          <div className="text-[11px] text-muted-soft leading-relaxed mt-6">
-            Make sure to try signing out, signing in with other email accounts, or using Google Auth to verify synchronization updates.
-          </div>
-        </div>
+        ))}
       </div>
+
+      {filteredEventTypes.length === 0 && (
+        <div className="text-center py-16 bg-canvas border border-hairline rounded-xl shadow-sm">
+          <Search className="w-12 h-12 text-muted mx-auto mb-4 opacity-50" />
+          <h3 className="font-cal-sans text-xl font-bold text-ink mb-2">No event types found</h3>
+          <p className="text-muted text-sm max-w-xs mx-auto">
+            Try adjusting your search terms or create a new event type to get started.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

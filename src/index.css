@@ -1,5 +1,5 @@
-@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap');
+@import "tailwindcss";
 
 @theme {
   --color-primary: #111111;
@@ -29,6 +29,8 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background-image: radial-gradient(var(--color-hairline) 1px, transparent 1px);
+    background-size: 24px 24px;
   }
 
   body {
