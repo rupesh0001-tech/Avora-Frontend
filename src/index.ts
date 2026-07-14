@@ -38,4 +38,5 @@ const server = serve({
   },
 });
 
+console.log("VITE_CLERK_PUBLISHABLE_KEY in server:", process.env.VITE_CLERK_PUBLISHABLE_KEY);
 console.log(`🚀 Server running at ${server.url}`);
