@@ -10,33 +10,12 @@ import RegisterPage from "../pages/Register";
 import DashboardPage from "../pages/Dashboard";
 import NotFoundPage from "../pages/NotFound";
 
-// Dummy pages for empty routes to maintain UX integrity
-function BookingsPage() {
-  return (
-    <div className="bg-white border border-[#E4E1D4] rounded-2xl p-8 text-left shadow-[3px_3px_0_rgba(23,22,20,0.08)]">
-      <h3 className="font-cal-sans text-xl font-bold text-[#171614] uppercase tracking-wide mb-4">Bookings</h3>
-      <p className="text-sm text-[#2B2A27] font-semibold">No appointments scheduled yet.</p>
-    </div>
-  );
-}
+import BookingsPage from "../pages/Dashboard/Bookings";
+import AvailabilityPage from "../pages/Dashboard/Availability";
+import SettingsPage from "../pages/Dashboard/Settings";
+import OnboardingPage from "../pages/Onboarding";
+import EventEditPage from "../pages/Dashboard/EventEdit";
 
-function AvailabilityPage() {
-  return (
-    <div className="bg-white border border-[#E4E1D4] rounded-2xl p-8 text-left shadow-[3px_3px_0_rgba(23,22,20,0.08)]">
-      <h3 className="font-cal-sans text-xl font-bold text-[#171614] uppercase tracking-wide mb-4">Availability Schedule</h3>
-      <p className="text-sm text-[#2B2A27] font-semibold">Configure your working hours and date overrides.</p>
-    </div>
-  );
-}
-
-function SettingsPage() {
-  return (
-    <div className="bg-white border border-[#E4E1D4] rounded-2xl p-8 text-left shadow-[3px_3px_0_rgba(23,22,20,0.08)]">
-      <h3 className="font-cal-sans text-xl font-bold text-[#171614] uppercase tracking-wide mb-4">Account Settings</h3>
-      <p className="text-sm text-[#2B2A27] font-semibold">Manage your notification preferences, profile details, and timezone.</p>
-    </div>
-  );
-}
 
 export function AppRoutes() {
   return (
@@ -62,6 +41,10 @@ export function AppRoutes() {
         <Route path="/dashboard/availability" element={<AvailabilityPage />} />
         <Route path="/dashboard/settings" element={<SettingsPage />} />
       </Route>
+
+      {/* Standalone Protected Pages */}
+      <Route path="/dashboard/events/:id/edit" element={<EventEditPage />} />
+      <Route path="/onboarding" element={<OnboardingPage />} />
 
       {/* Catch-all 404 Route */}
       <Route element={<PublicLayout />}>
