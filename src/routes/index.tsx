@@ -15,7 +15,7 @@ import AvailabilityPage from "../pages/Dashboard/Availability";
 import SettingsPage from "../pages/Dashboard/Settings";
 import OnboardingPage from "../pages/Onboarding";
 import EventEditPage from "../pages/Dashboard/EventEdit";
-
+import BookingPage from "../pages/Booking";
 
 export function AppRoutes() {
   return (
@@ -45,6 +45,7 @@ export function AppRoutes() {
       {/* Standalone Protected Pages */}
       <Route path="/dashboard/events/:id/edit" element={<EventEditPage />} />
       <Route path="/onboarding" element={<OnboardingPage />} />
+      <Route path="/book/:username/:slug" element={<BookingPage />} />
 
       {/* Catch-all 404 Route */}
       <Route element={<PublicLayout />}>

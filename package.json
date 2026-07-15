@@ -12,6 +12,7 @@
     "@clerk/react": "^6.12.3",
     "axios": "^1.18.1",
     "bun-plugin-tailwind": "^0.1.2",
+    "clsx": "^2.1.1",
     "dayjs": "^1.11.21",
     "framer-motion": "^12.42.2",
     "react": "^19",

@@ -519,22 +519,30 @@ export function EventEditPage() {
                                   <span>{formatTime24to12(slot.startTime)}</span>
                                   <ChevronDown className="w-4.5 h-4.5 text-[#2B2A27]/50" />
                                 </button>
-                                
-                                {isStartOpen && (
-                                  <div className="absolute top-full left-0 mt-1.5 w-36 max-h-48 overflow-y-auto bg-white border border-[#E4E1D4] rounded-xl shadow-lg z-30 py-1 font-semibold text-xs text-[#171614] animate-in fade-in zoom-in-95 duration-100">
-                                    {TIME_OPTIONS.map((opt) => (
-                                      <button
-                                        type="button"
-                                        key={opt.val}
-                                        onClick={() => {
-                                          handleSlotTimeChange(dayIdx, slotIdx, "startTime", opt.val);
-                                          setActiveDropdown(null);
-                                        }}
-                                        className="w-full text-left px-3 py-1.5 hover:bg-[#7CEFC0]/20 hover:text-[#171614] transition-colors cursor-pointer"
-                                      >
-                                        {opt.label}
-                                      </button>
-                                    ))}
+                                                                {isStartOpen && (
+                                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[340px] bg-white border border-[#E4E1D4] rounded-2xl shadow-xl z-40 p-4 animate-in fade-in zoom-in-95 duration-100">
+                                    <div className="text-[10px] font-extrabold uppercase text-[#171614]/65 tracking-wider mb-2 text-center">
+                                      Select Start Time
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-1.5 max-h-48 overflow-y-auto pr-1">
+                                      {TIME_OPTIONS.map((opt) => (
+                                        <button
+                                          type="button"
+                                          key={opt.val}
+                                          onClick={() => {
+                                            handleSlotTimeChange(dayIdx, slotIdx, "startTime", opt.val);
+                                            setActiveDropdown(null);
+                                          }}
+                                          className={`py-1.5 text-[10px] font-bold border rounded-lg transition-all cursor-pointer text-center ${
+                                            slot.startTime === opt.val
+                                              ? "bg-[#7CEFC0] text-[#171614] border-[#171614]/15 shadow-[1px_1px_0_rgba(23,22,20,0.08)]"
+                                              : "bg-white border-[#E4E1D4] text-[#2B2A27] hover:bg-[#FDFBF2] hover:border-[#171614]/15"
+                                          }`}
+                                        >
+                                          {opt.label}
+                                        </button>
+                                      ))}
+                                    </div>
                                   </div>
                                 )}
                               </div>
@@ -560,20 +568,29 @@ export function EventEditPage() {
                                 </button>
                                 
                                 {isEndOpen && (
-                                  <div className="absolute top-full left-0 mt-1.5 w-36 max-h-48 overflow-y-auto bg-white border border-[#E4E1D4] rounded-xl shadow-lg z-30 py-1 font-semibold text-xs text-[#171614] animate-in fade-in zoom-in-95 duration-100">
-                                    {TIME_OPTIONS.map((opt) => (
-                                      <button
-                                        type="button"
-                                        key={opt.val}
-                                        onClick={() => {
-                                          handleSlotTimeChange(dayIdx, slotIdx, "endTime", opt.val);
-                                          setActiveDropdown(null);
-                                        }}
-                                        className="w-full text-left px-3 py-1.5 hover:bg-[#7CEFC0]/20 hover:text-[#171614] transition-colors cursor-pointer"
-                                      >
-                                        {opt.label}
-                                      </button>
-                                    ))}
+                                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[340px] bg-white border border-[#E4E1D4] rounded-2xl shadow-xl z-40 p-4 animate-in fade-in zoom-in-95 duration-100">
+                                    <div className="text-[10px] font-extrabold uppercase text-[#171614]/65 tracking-wider mb-2 text-center">
+                                      Select End Time
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-1.5 max-h-48 overflow-y-auto pr-1">
+                                      {TIME_OPTIONS.map((opt) => (
+                                        <button
+                                          type="button"
+                                          key={opt.val}
+                                          onClick={() => {
+                                            handleSlotTimeChange(dayIdx, slotIdx, "endTime", opt.val);
+                                            setActiveDropdown(null);
+                                          }}
+                                          className={`py-1.5 text-[10px] font-bold border rounded-lg transition-all cursor-pointer text-center ${
+                                            slot.endTime === opt.val
+                                              ? "bg-[#7CEFC0] text-[#171614] border-[#171614]/15 shadow-[1px_1px_0_rgba(23,22,20,0.08)]"
+                                              : "bg-white border-[#E4E1D4] text-[#2B2A27] hover:bg-[#FDFBF2] hover:border-[#171614]/15"
+                                          }`}
+                                        >
+                                          {opt.label}
+                                        </button>
+                                      ))}
+                                    </div>
                                   </div>
                                 )}
                               </div>
