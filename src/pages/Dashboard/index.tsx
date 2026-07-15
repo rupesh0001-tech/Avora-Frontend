@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useOutletContext } from "react-router-dom";
 import { Clock, Video, MapPin, Copy, ExternalLink, Plus, Search, Check } from "lucide-react";
 
 interface EventType {
@@ -14,7 +14,7 @@ interface EventType {
 }
 
 export default function DashboardPage() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const { searchQuery } = useOutletContext<{ searchQuery: string }>();
   const [copiedId, setCopiedId] = useState<string | null>(null);
   
   const [eventTypes, setEventTypes] = useState<EventType[]>([
@@ -71,23 +71,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      {/* Search and Action Bar */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-stretch sm:items-center bg-white p-5 rounded-2xl border-2 border-[#171614] shadow-[4px_4px_0_#171614]">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#171614] opacity-70" />
-          <input
-            type="text"
-            placeholder="Search event types..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border-2 border-[#171614] rounded-xl text-sm bg-white focus:outline-none focus:outline-2 focus:outline-[#B7ACF7] transition-all font-semibold text-[#171614] placeholder-[#2B2A27]/60"
-          />
-        </div>
-        <button className="flex items-center justify-center gap-2 bg-[#171614] text-[#FDFBF2] text-sm font-bold px-5 py-2.5 rounded-xl border-2 border-[#171614] shadow-[3px_3px_0_#171614] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0_#171614] transition-all cursor-pointer">
-          <Plus className="w-4 h-4 stroke-[3]" />
-          Create Event Type
-        </button>
-      </div>
+
 
       {/* Grid of Event Types */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

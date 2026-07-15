@@ -1,10 +1,13 @@
-import { useRef, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 
 export function APITester() {
-  const responseInputRef = useRef<HTMLTextAreaElement>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [response, setResponse] = useState("");
 
   const testEndpoint = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
+    setResponse("Loading response...");
 
     try {
       const form = e.currentTarget;
@@ -15,9 +18,11 @@ export function APITester() {
       const res = await fetch(url, { method });
 
       const data = await res.json();
-      responseInputRef.current!.value = JSON.stringify(data, null, 2);
+      setResponse(JSON.stringify(data, null, 2));
     } catch (error) {
-      responseInputRef.current!.value = String(error);
+      setResponse(String(error));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -47,17 +52,26 @@ export function APITester() {
         />
         <button
           type="submit"
-          className="bg-[#fbf0df] text-[#1a1a1a] border-0 px-5 py-1.5 rounded-lg font-bold transition-all duration-100 hover:bg-[#f3d5a3] hover:-translate-y-px cursor-pointer whitespace-nowrap"
+          disabled={isLoading}
+          className="bg-[#fbf0df] text-[#1a1a1a] border-0 px-5 py-1.5 rounded-lg font-bold transition-all duration-100 hover:bg-[#f3d5a3] hover:-translate-y-px cursor-pointer whitespace-nowrap flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Send
+          {isLoading ? (
+            <>
+              <span className="w-4 h-4 rounded-full border-2 border-[#1a1a1a] border-t-transparent animate-spin"></span>
+              Sending...
+            </>
+          ) : (
+            "Send"
+          )}
         </button>
       </form>
       <textarea
-        ref={responseInputRef}
         readOnly
+        value={response}
         placeholder="Response will appear here..."
         className="w-full min-h-[140px] bg-[#1a1a1a] border-2 border-[#fbf0df] rounded-xl p-3 text-[#fbf0df] font-mono resize-y focus:border-[#f3d5a3] placeholder-[#fbf0df]/40"
       />
     </div>
   );
 }
+

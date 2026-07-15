@@ -1,13 +1,14 @@
+import { useState, useEffect } from "react";
 import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAuth, UserButton } from "@clerk/react";
-import { useEffect } from "react";
-import { LayoutDashboard, Calendar, Settings, Clock } from "lucide-react";
+import { LayoutDashboard, Calendar, Settings, Clock, Search, Plus } from "lucide-react";
 import { LogoMarkSvg } from "../components/CallyComponents";
 
 export function DashboardLayout() {
   const { isSignedIn, isLoaded } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
@@ -17,8 +18,8 @@ export function DashboardLayout() {
 
   if (!isLoaded || !isSignedIn) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-[#FDFBF2] bg-[radial-gradient(#E4E1D4_1.5px,transparent_1.5px)] bg-[length:24px_24px]">
-        <div className="w-12 h-12 rounded-full border-4 border-[#171614] border-t-transparent animate-spin"></div>
+      <div className={clsx('flex', 'h-screen', 'w-screen', 'items-center', 'justify-center', 'bg-[#FDFBF2]', 'bg-[radial-gradient(#E4E1D4_1.5px,transparent_1.5px)]', 'bg-[length:24px_24px]')}>
+        <div className={clsx('w-12', 'h-12', 'rounded-full', 'border-4', 'border-[#171614]', 'border-t-transparent', 'animate-spin')}></div>
       </div>
     );
   }
@@ -31,21 +32,21 @@ export function DashboardLayout() {
   ];
 
   return (
-    <div className="flex h-screen bg-[#FDFBF2] bg-[radial-gradient(#E4E1D4_1.5px,transparent_1.5px)] bg-[length:24px_24px] overflow-hidden">
+    <div className={clsx('flex', 'h-screen', 'bg-[#FDFBF2]', 'bg-[radial-gradient(#E4E1D4_1.5px,transparent_1.5px)]', 'bg-[length:24px_24px]', 'overflow-hidden')}>
       {/* Sidebar */}
-      <aside className="w-64 border-r-2 border-[#171614] bg-white flex flex-col justify-between">
+      <aside className={clsx('w-64', 'border-r-2', 'border-[#171614]', 'bg-white', 'flex', 'flex-col', 'justify-between')}>
         <div>
-          <div className="h-16 border-b-2 border-[#171614] bg-[#F3E75B] flex items-center px-6">
-            <Link to="/" className="flex items-center gap-3 font-cal-sans text-2xl font-bold tracking-tight text-[#171614]">
-              <div className="w-[34px] h-[34px] bg-[#171614] rounded-lg flex items-center justify-center flex-shrink-0">
+          <div className={clsx('h-16', 'border-b-2', 'border-[#171614]', 'bg-[#F3E75B]', 'flex', 'items-center', 'px-6')}>
+            <Link to="/" className={clsx('flex', 'items-center', 'gap-3', 'font-cal-sans', 'text-2xl', 'font-bold', 'tracking-tight', 'text-[#171614]')}>
+              <div className={clsx('w-[34px]', 'h-[34px]', 'bg-[#171614]', 'rounded-lg', 'flex', 'items-center', 'justify-center', 'flex-shrink-0')}>
                 <LogoMarkSvg />
               </div>
-              <span className="logo-text font-cal-sans text-lg font-bold tracking-wide text-[#171614]">
+              <span className={clsx('logo-text', 'font-cal-sans', 'text-lg', 'font-bold', 'tracking-wide', 'text-[#171614]')}>
                 CALLY
               </span>
             </Link>
           </div>
-          <nav className="p-4 space-y-2.5">
+          <nav className={clsx('p-4', 'space-y-2.5')}>
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
@@ -59,7 +60,7 @@ export function DashboardLayout() {
                       : "text-[#2B2A27] border-transparent hover:border-[#171614] hover:bg-white hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[2px_2px_0_#171614]"
                   }`}
                 >
-                  <Icon className="h-4 w-4 stroke-[2.5]" />
+                  <Icon className={clsx('h-4', 'w-4', 'stroke-[2.5]')} />
                   {item.name}
                 </Link>
               );
@@ -67,22 +68,40 @@ export function DashboardLayout() {
           </nav>
         </div>
 
-        <div className="p-4 border-t-2 border-[#171614] bg-[#FDFBF2] flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className={clsx('p-4', 'border-t-2', 'border-[#171614]', 'bg-[#FDFBF2]', 'flex', 'items-center', 'justify-between')}>
+          <div className={clsx('flex', 'items-center', 'gap-3')}>
             <UserButton afterSignOutUrl="/" showName />
           </div>
         </div>
       </aside>
 
       {/* Main Workspace */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-16 border-b-2 border-[#171614] bg-white flex items-center justify-between px-8">
-          <h2 className="font-cal-sans text-lg font-bold text-[#171614] uppercase tracking-wider">
+      <div className={clsx('flex-1', 'flex', 'flex-col', 'overflow-hidden')}>
+        <header className={clsx('h-16', 'border-b-2', 'border-[#171614]', 'bg-white', 'flex', 'items-center', 'justify-between', 'px-8')}>
+          <h2 className={clsx('font-cal-sans', 'text-lg', 'font-bold', 'text-[#171614]', 'uppercase', 'tracking-wider')}>
             {navItems.find((n) => n.path === location.pathname)?.name || "Dashboard"}
           </h2>
+          {location.pathname === "/dashboard" && (
+            <div className={clsx('flex', 'items-center', 'gap-4')}>
+              <div className={clsx('relative', 'w-64')}>
+                <Search className={clsx('absolute', 'left-3', 'top-1/2', '-translate-y-1/2', 'w-4', 'h-', 'text-[#171614]', 'opacity-70')}" />
+                <input
+                  type="text"
+                  placeholder="Search event types..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                 className={clsx('w-full', 'pl-9', 'pr-4', 'py-1.5', 'border-2', 'border-[#171614]', 'rounded-xl', 'text-xs', 'bg-white', 'focus:outline-none', 'focus:outline-2', 'focus:outline-[#B7ACF7]', 'transition-all', 'font-semibold', 'text-[#171614]', 'placeholder-[#2B2A27]/60')}"
+                />
+              </div>
+              <buttonclassName={clsx('flex', 'items-center', 'justify-center', 'gap-1.5', 'bg-[#171614]', 'text-[#FDFBF2]', 'text-xs', 'font-bold', 'px-4', 'py-2', 'rounded-xl', 'border-2', 'border-[#171614]', 'shadow-[2px_2px_0_#171614]', 'hover:translate-x-[-1px]', 'hover:translate-y-[-1px]', 'hover:shadow-[3px_3px_0_#171614]', 'transition-all', 'cursor-pointer')}">
+                <PlusclassName={clsx('w-3.5', 'h-3.5', 'stroke-[3]')}" />
+                Create Event Type
+              </button>
+            </div>
+          )}
         </header>
-        <main className="flex-1 overflow-y-auto p-8">
-          <Outlet />
+        <mainclassName={clsx('flex-1', 'overflow-y-auto', 'p-8')}">
+          <Outlet context={{ searchQuery, setSearchQuery }} />
         </main>
       </div>
     </div>
