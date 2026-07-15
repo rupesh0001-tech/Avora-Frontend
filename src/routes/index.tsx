@@ -13,27 +13,27 @@ import NotFoundPage from "../pages/NotFound";
 // Dummy pages for empty routes to maintain UX integrity
 function BookingsPage() {
   return (
-    <div className="bg-canvas border border-hairline rounded-lg p-8 text-left shadow-sm">
-      <h3 className="font-cal-sans text-xl font-bold text-ink mb-4">Bookings</h3>
-      <p className="text-sm text-muted">No appointments scheduled yet.</p>
+    <div className="bg-white border-2 border-[#171614] rounded-2xl p-8 text-left shadow-[4px_4px_0_#171614]">
+      <h3 className="font-cal-sans text-xl font-bold text-[#171614] uppercase tracking-wide mb-4">Bookings</h3>
+      <p className="text-sm text-[#2B2A27] font-semibold">No appointments scheduled yet.</p>
     </div>
   );
 }
 
 function AvailabilityPage() {
   return (
-    <div className="bg-canvas border border-hairline rounded-lg p-8 text-left shadow-sm">
-      <h3 className="font-cal-sans text-xl font-bold text-ink mb-4">Availability Schedule</h3>
-      <p className="text-sm text-muted">Configure your working hours and date overrides.</p>
+    <div className="bg-white border-2 border-[#171614] rounded-2xl p-8 text-left shadow-[4px_4px_0_#171614]">
+      <h3 className="font-cal-sans text-xl font-bold text-[#171614] uppercase tracking-wide mb-4">Availability Schedule</h3>
+      <p className="text-sm text-[#2B2A27] font-semibold">Configure your working hours and date overrides.</p>
     </div>
   );
 }
 
 function SettingsPage() {
   return (
-    <div className="bg-canvas border border-hairline rounded-lg p-8 text-left shadow-sm">
-      <h3 className="font-cal-sans text-xl font-bold text-ink mb-4">Account Settings</h3>
-      <p className="text-sm text-muted">Manage your notification preferences, profile details, and timezone.</p>
+    <div className="bg-white border-2 border-[#171614] rounded-2xl p-8 text-left shadow-[4px_4px_0_#171614]">
+      <h3 className="font-cal-sans text-xl font-bold text-[#171614] uppercase tracking-wide mb-4">Account Settings</h3>
+      <p className="text-sm text-[#2B2A27] font-semibold">Manage your notification preferences, profile details, and timezone.</p>
     </div>
   );
 }

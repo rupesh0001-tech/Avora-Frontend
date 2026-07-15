@@ -2,6 +2,7 @@ import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAuth, UserButton } from "@clerk/react";
 import { useEffect } from "react";
 import { LayoutDashboard, Calendar, Settings, Clock } from "lucide-react";
+import { LogoMarkSvg } from "../components/CallyComponents";
 
 export function DashboardLayout() {
   const { isSignedIn, isLoaded } = useAuth();
@@ -16,8 +17,8 @@ export function DashboardLayout() {
 
   if (!isLoaded || !isSignedIn) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-canvas">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="flex h-screen w-screen items-center justify-center bg-[#FDFBF2] bg-[radial-gradient(#E4E1D4_1.5px,transparent_1.5px)] bg-[length:24px_24px]">
+        <div className="w-12 h-12 rounded-full border-4 border-[#171614] border-t-transparent animate-spin"></div>
       </div>
     );
   }
@@ -30,16 +31,21 @@ export function DashboardLayout() {
   ];
 
   return (
-    <div className="flex h-screen bg-surface-soft overflow-hidden">
+    <div className="flex h-screen bg-[#FDFBF2] bg-[radial-gradient(#E4E1D4_1.5px,transparent_1.5px)] bg-[length:24px_24px] overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-64 border-r border-hairline bg-canvas flex flex-col justify-between">
+      <aside className="w-64 border-r-2 border-[#171614] bg-white flex flex-col justify-between">
         <div>
-          <div className="h-16 border-b border-hairline flex items-center px-6">
-            <Link to="/" className="font-cal-sans text-2xl font-bold tracking-tight text-ink">
-              avora<span className="text-brand-accent">.</span>
+          <div className="h-16 border-b-2 border-[#171614] bg-[#F3E75B] flex items-center px-6">
+            <Link to="/" className="flex items-center gap-3 font-cal-sans text-2xl font-bold tracking-tight text-[#171614]">
+              <div className="w-[34px] h-[34px] bg-[#171614] rounded-lg flex items-center justify-center flex-shrink-0">
+                <LogoMarkSvg />
+              </div>
+              <span className="logo-text font-cal-sans text-lg font-bold tracking-wide text-[#171614]">
+                CALLY
+              </span>
             </Link>
           </div>
-          <nav className="p-4 space-y-1">
+          <nav className="p-4 space-y-2.5">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
@@ -47,13 +53,13 @@ export function DashboardLayout() {
                 <Link
                   key={item.name}
                   to={item.path}
-                  className={`flex items-center gap-3 px-4 py-2.5 rounded-md text-sm font-medium transition-all ${
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold border-2 transition-all ${
                     isActive
-                      ? "bg-surface-card text-ink"
-                      : "text-muted hover:text-ink hover:bg-surface-soft"
+                      ? "bg-[#7CEFC0] text-[#171614] border-[#171614] translate-x-[-1px] translate-y-[-1px] shadow-[2px_2px_0_#171614]"
+                      : "text-[#2B2A27] border-transparent hover:border-[#171614] hover:bg-white hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[2px_2px_0_#171614]"
                   }`}
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className="h-4 w-4 stroke-[2.5]" />
                   {item.name}
                 </Link>
               );
@@ -61,7 +67,7 @@ export function DashboardLayout() {
           </nav>
         </div>
 
-        <div className="p-4 border-t border-hairline flex items-center justify-between">
+        <div className="p-4 border-t-2 border-[#171614] bg-[#FDFBF2] flex items-center justify-between">
           <div className="flex items-center gap-3">
             <UserButton afterSignOutUrl="/" showName />
           </div>
@@ -70,20 +76,10 @@ export function DashboardLayout() {
 
       {/* Main Workspace */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-16 border-b border-hairline bg-canvas flex items-center justify-between px-8">
-          <h2 className="font-cal-sans text-xl font-bold text-ink">
+        <header className="h-16 border-b-2 border-[#171614] bg-white flex items-center justify-between px-8">
+          <h2 className="font-cal-sans text-lg font-bold text-[#171614] uppercase tracking-wider">
             {navItems.find((n) => n.path === location.pathname)?.name || "Dashboard"}
           </h2>
-          <div className="flex items-center gap-4">
-            <a
-              href="https://dashboard.clerk.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-muted hover:text-ink transition-colors border border-hairline px-3 py-1.5 rounded-md"
-            >
-              Clerk Dashboard
-            </a>
-          </div>
         </header>
         <main className="flex-1 overflow-y-auto p-8">
           <Outlet />
@@ -92,3 +88,4 @@ export function DashboardLayout() {
     </div>
   );
 }
+
