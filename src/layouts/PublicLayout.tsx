@@ -3,7 +3,7 @@ import { useAuth, UserButton } from "@clerk/react";
 import { LogoMarkSvg } from "../components/CallyComponents";
 
 export function PublicLayout() {
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, isLoaded } = useAuth();
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FDFBF2]">
@@ -22,7 +22,9 @@ export function PublicLayout() {
           <nav className="flex items-center gap-9 font-semibold text-[15px] text-[#171614]">
             <a href="#features" className="opacity-85 hover:opacity-100 transition-opacity">Features</a>
             <a href="#how" className="opacity-85 hover:opacity-100 transition-opacity">How It Works</a>
-            {isSignedIn ? (
+            {!isLoaded ? (
+              <div className="w-20 h-8 opacity-0"></div>
+            ) : isSignedIn ? (
               <>
                 <Link to="/dashboard" className="text-sm font-bold uppercase tracking-wider text-[#171614] hover:opacity-100 opacity-85 transition-opacity">
                   Dashboard
