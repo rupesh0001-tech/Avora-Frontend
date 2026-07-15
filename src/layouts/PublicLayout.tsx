@@ -37,8 +37,8 @@ export function PublicLayout() {
               </>
             ) : (
               <>
-                <Link to="/login" className={clsx('text-sm', 'font-bold', 'uppercase', 'tracking-wider', 'text-[#171614]', 'hover:opacity-100', 'opacity-85', 'transition-opacity')}>
-                  Sign in
+                <Link to="/login" className={clsx('text-md', 'font-bold',  'tracking-wider', 'text-[#171614]', 'hover:opacity-100', 'opacity-85', 'transition-opacity')}>
+                  Sign In
                 </Link>
                 <Link to="/register" className={clsx('inline-flex', 'items-center', 'gap-2', 'font-bold', 'text-[14px]', 'px-5', 'py-3', 'rounded-full', 'border-2', 'border-[#171614]', 'bg-[#171614]', 'text-[#FDFBF2]', 'shadow-[3px_3px_0_#171614]', 'hover:translate-x-[-2px]', 'hover:translate-y-[-2px]', 'hover:shadow-[5px_5px_0_#171614]', 'transition-all')}>
                   Get Started
