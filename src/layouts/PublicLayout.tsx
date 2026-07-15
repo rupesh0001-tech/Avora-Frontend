@@ -33,7 +33,7 @@ export function PublicLayout() {
                 <Link to="/dashboard" className={clsx('text-md', 'font-semibold', 'text-[#171614]', 'hover:opacity-100', 'opacity-85', 'transition-opacity')}>
                   Dashboard
                 </Link>
-                <UserButton afterSignOutUrl="/" />
+                <UserButton />
               </>
             ) : (
               <>

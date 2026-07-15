@@ -76,7 +76,7 @@ export function DashboardLayout() {
         {/* Footer profile container with thin top border */}
         <div className={clsx('p-4', 'border-t', 'border-[#E4E1D4]', 'bg-[#FDFBF2]', 'flex', 'items-center', 'justify-between')}>
           <div className={clsx('flex', 'items-center', 'gap-3')}>
-            <UserButton afterSignOutUrl="/" showName />
+            <UserButton showName />
           </div>
         </div>
       </aside>
