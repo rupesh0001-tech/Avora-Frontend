@@ -30,7 +30,7 @@ export function PublicLayout() {
               <div className={clsx('w-20', 'h-8', 'opacity-0')}></div>
             ) : isSignedIn ? (
               <>
-                <Link to="/dashboard" className={clsx('text-sm', 'font-bold', 'tracking-wider', 'text-[#171614]', 'hover:opacity-100', 'opacity-85', 'transition-opacity')}>
+                <Link to="/dashboard" className={clsx('text-md', 'font-semibold', 'text-[#171614]', 'hover:opacity-100', 'opacity-85', 'transition-opacity')}>
                   Dashboard
                 </Link>
                 <UserButton afterSignOutUrl="/" />

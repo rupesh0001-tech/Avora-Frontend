@@ -37,10 +37,11 @@ export function DashboardLayout() {
 
   return (
     <div className={clsx('flex', 'h-screen', 'bg-[#FDFBF2]', 'bg-[radial-gradient(#E4E1D4_1.5px,transparent_1.5px)]', 'bg-[length:24px_24px]', 'overflow-hidden')}>
-      {/* Sidebar */}
-      <aside className={clsx('w-64', 'border-r-2', 'border-[#171614]', 'bg-white', 'flex', 'flex-col', 'justify-between')}>
+      {/* Sidebar with thin right border */}
+      <aside className={clsx('w-64', 'border-r', 'border-[#E4E1D4]', 'bg-white', 'flex', 'flex-col', 'justify-between')}>
         <div>
-          <div className={clsx('h-16', 'border-b-2', 'border-[#171614]', 'bg-[#F3E75B]', 'flex', 'items-center', 'px-6')}>
+          {/* Logo container with thin bottom border */}
+          <div className={clsx('h-16', 'border-b', 'border-[#E4E1D4]', 'bg-[#F3E75B]', 'flex', 'items-center', 'px-6')}>
             <Link to="/" className={clsx('flex', 'items-center', 'gap-3', 'font-cal-sans', 'text-2xl', 'font-bold', 'tracking-tight', 'text-[#171614]')}>
               <div className={clsx('w-[34px]', 'h-[34px]', 'bg-[#171614]', 'rounded-lg', 'flex', 'items-center', 'justify-center', 'flex-shrink-0')}>
                 <LogoMarkSvg />
@@ -58,10 +59,10 @@ export function DashboardLayout() {
                 <Link
                   key={item.name}
                   to={item.path}
-                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold border-2 transition-all ${
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold border transition-all ${
                     isActive
-                      ? "bg-[#7CEFC0] text-[#171614] border-[#171614] translate-x-[-1px] translate-y-[-1px] shadow-[2px_2px_0_#171614]"
-                      : "text-[#2B2A27] border-transparent hover:border-[#171614] hover:bg-white hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[2px_2px_0_#171614]"
+                      ? "bg-[#7CEFC0] text-[#171614] border-[#171614]/15 translate-x-[-1px] translate-y-[-1px] shadow-[2px_2px_0_rgba(23,22,20,0.08)]"
+                      : "text-[#2B2A27] border-transparent hover:border-[#171614]/15 hover:bg-white hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[2px_2px_0_rgba(23,22,20,0.08)]"
                   }`}
                 >
                   <Icon className={clsx('h-4', 'w-4', 'stroke-[2.5]')} />
@@ -72,7 +73,8 @@ export function DashboardLayout() {
           </nav>
         </div>
 
-        <div className={clsx('p-4', 'border-t-2', 'border-[#171614]', 'bg-[#FDFBF2]', 'flex', 'items-center', 'justify-between')}>
+        {/* Footer profile container with thin top border */}
+        <div className={clsx('p-4', 'border-t', 'border-[#E4E1D4]', 'bg-[#FDFBF2]', 'flex', 'items-center', 'justify-between')}>
           <div className={clsx('flex', 'items-center', 'gap-3')}>
             <UserButton afterSignOutUrl="/" showName />
           </div>
@@ -81,7 +83,8 @@ export function DashboardLayout() {
 
       {/* Main Workspace */}
       <div className={clsx('flex-1', 'flex', 'flex-col', 'overflow-hidden')}>
-        <header className={clsx('h-16', 'border-b-2', 'border-[#171614]', 'bg-white', 'flex', 'items-center', 'justify-between', 'px-8')}>
+        {/* Top Header with thin bottom border */}
+        <header className={clsx('h-16', 'border-b', 'border-[#E4E1D4]', 'bg-white', 'flex', 'items-center', 'justify-between', 'px-8')}>
           <h2 className={clsx('font-cal-sans', 'text-lg', 'font-bold', 'text-[#171614]', 'uppercase', 'tracking-wider')}>
             {navItems.find((n) => n.path === location.pathname)?.name || "Dashboard"}
           </h2>
@@ -94,10 +97,10 @@ export function DashboardLayout() {
                   placeholder="Search event types..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className={clsx('w-full', 'pl-9', 'pr-4', 'py-2', 'border-2', 'border-[#171614]', 'rounded-xl', 'text-xs', 'bg-white', 'focus:outline-none', 'focus:outline-2', 'focus:outline-[#B7ACF7]', 'transition-all', 'font-semibold', 'text-[#171614]', 'placeholder-[#2B2A27]/60')}
+                  className={clsx('w-full', 'pl-9', 'pr-4', 'py-2', 'border', 'border-[#E4E1D4]', 'rounded-xl', 'text-xs', 'bg-white', 'focus:outline-none', 'focus:border-[#B7ACF7]', 'transition-all', 'font-semibold', 'text-[#171614]', 'placeholder-[#2B2A27]/60')}
                 />
               </div>
-              <button className={clsx('flex', 'items-center', 'justify-center', 'gap-1.5', 'bg-[#171614]', 'text-[#FDFBF2]', 'text-xs', 'font-bold', 'px-4', 'py-2', 'rounded-xl', 'border-2', 'border-[#171614]', 'shadow-[2px_2px_0_#171614]', 'hover:translate-x-[-1px]', 'hover:translate-y-[-1px]', 'hover:shadow-[3px_3px_0_#171614]', 'transition-all', 'cursor-pointer')}>
+              <button className={clsx('flex', 'items-center', 'justify-center', 'gap-1.5', 'bg-[#171614]', 'text-[#FDFBF2]', 'text-xs', 'font-bold', 'px-4', 'py-2', 'rounded-xl', 'border', 'border-[#171614]', 'shadow-[2px_2px_0_rgba(23,22,20,0.15)]', 'hover:translate-x-[-1px]', 'hover:translate-y-[-1px]', 'hover:shadow-[3px_3px_0_rgba(23,22,20,0.2)]', 'transition-all', 'cursor-pointer')}>
                 <Plus className={clsx('w-3.5', 'h-3.5', 'stroke-[3]')} />
                 Create Event Type
               </button>

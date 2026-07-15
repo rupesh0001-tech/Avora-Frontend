@@ -78,27 +78,27 @@ export default function DashboardPage() {
         {filteredEventTypes.map((et) => (
           <div
             key={et.id}
-            className={`bg-white border-2 border-[#171614] rounded-2xl overflow-hidden shadow-[4px_4px_0_#171614] hover:translate-x-[-3px] hover:translate-y-[-3px] hover:shadow-[7px_7px_0_#171614] transition-all flex flex-col justify-between ${
+            className={`bg-white border border-[#E4E1D4] rounded-2xl overflow-hidden shadow-[3px_3px_0_rgba(23,22,20,0.08)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0_rgba(23,22,20,0.12)] transition-all flex flex-col justify-between ${
               et.isActive ? "" : "opacity-85"
             }`}
           >
             {/* Top Bar with status & action dropdown */}
-            <div className="p-6 border-b-2 border-[#171614] flex-1">
+            <div className="p-6 border-b border-[#E4E1D4] flex-1">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-xs font-bold text-[#171614] bg-[#F3E75B] px-3 py-1 rounded-xl border-2 border-[#171614]">
+                <span className="text-xs font-bold text-[#171614] bg-[#F3E75B] px-3 py-1 rounded-xl border border-[#171614]/15">
                   {et.duration} mins
                 </span>
                 
                 {/* Custom Neo-brutalist Toggle Switch */}
                 <button
                   onClick={() => handleToggleActive(et.id)}
-                  className={`relative w-[44px] h-[26px] rounded-full border-2 border-[#171614] transition-colors duration-200 focus:outline-none cursor-pointer ${
+                  className={`relative w-[44px] h-[26px] rounded-full border border-[#171614]/15 transition-colors duration-200 focus:outline-none cursor-pointer ${
                     et.isActive ? "bg-[#7CEFC0]" : "bg-[#E4E1D4]"
                   }`}
                   aria-label="Toggle Active Status"
                 >
                   <div
-                    className={`absolute top-[2px] left-[2px] w-[18px] h-[18px] rounded-full border border-[#171614] bg-white transition-transform duration-200 ${
+                    className={`absolute top-[2px] left-[2px] w-[18px] h-[18px] rounded-full border border-[#171614]/10 bg-white transition-transform duration-200 ${
                       et.isActive ? "translate-x-[18px]" : "translate-x-0"
                     }`}
                   />
@@ -111,7 +111,7 @@ export default function DashboardPage() {
               </h3>
               
               <div className="mb-4">
-                <span className="inline-block text-xs font-extrabold text-[#171614] bg-[#B7ACF7] border border-[#171614] px-2.5 py-0.5 rounded-md">
+                <span className="inline-block text-xs font-extrabold text-[#171614] bg-[#B7ACF7] border border-[#171614]/15 px-2.5 py-0.5 rounded-md">
                   {et.price > 0 ? `$${et.price}.00` : "Free"}
                 </span>
               </div>
@@ -168,7 +168,7 @@ export default function DashboardPage() {
       </div>
 
       {filteredEventTypes.length === 0 && (
-        <div className="text-center py-16 bg-white border-2 border-[#171614] rounded-2xl shadow-[4px_4px_0_#171614]">
+        <div className="text-center py-16 bg-white border border-[#E4E1D4] rounded-2xl shadow-[3px_3px_0_rgba(23,22,20,0.08)]">
           <Search className="w-12 h-12 text-[#171614] mx-auto mb-4 opacity-75" />
           <h3 className="font-cal-sans text-xl font-bold text-[#171614] uppercase tracking-wide mb-2">No event types found</h3>
           <p className="text-[#2B2A27] text-sm max-w-xs mx-auto font-medium">
