@@ -69,4 +69,13 @@
     font-family: inherit;
     cursor: pointer;
   }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--ink-soft);
+    opacity: 0.45;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+  }
 }
