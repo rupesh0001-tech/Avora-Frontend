@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { clsx } from "clsx";
-import { Calendar, Clock, User, Mail, Phone, MapPin, Video, ChevronDown, ChevronUp, RefreshCw, Search, X } from "lucide-react";
+import { Calendar, Clock, User, Mail, Phone, MapPin, Video, ChevronDown, ChevronUp, RefreshCw, Search, X, Copy, Check } from "lucide-react";
 import { useApi } from "../../lib/api";
 import { Select } from "../../components/ui/Select";
 
@@ -147,6 +147,37 @@ export default function BookingsPage() {
   useEffect(() => {
     fetchBookings();
   }, []);
+
+  const [copiedBookingId, setCopiedBookingId] = useState<string | null>(null);
+
+  const handleCopyUserInfo = (booking: Booking) => {
+    const formattedDate = new Date(booking.startTime).toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+    const formattedTime = new Date(booking.startTime).toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+
+    const textToCopy = [
+      `Name: ${booking.attendeeName}`,
+      `Email: ${booking.attendeeEmail}`,
+      booking.attendeePhone ? `Phone: ${booking.attendeePhone}` : null,
+      `Meeting Type: ${booking.eventType.title}`,
+      `Date: ${formattedDate}`,
+      `Time: ${formattedTime}`,
+      `Status: ${booking.status === "pending_payment" ? "Pending Payment" : booking.status}`,
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    navigator.clipboard.writeText(textToCopy);
+    setCopiedBookingId(booking.id);
+    setTimeout(() => setCopiedBookingId(null), 2000);
+  };
 
   const toggleExpand = (id: string) => {
     if (expandedBookingId === id) {
@@ -354,6 +385,16 @@ export default function BookingsPage() {
                       <p className={clsx('text-xs', 'text-[#2B2A27]/70', 'font-semibold', 'flex', 'items-center', 'gap-1.5', 'mt-1')}>
                         <User className={clsx('w-3.5', 'h-3.5')} />
                         <span>{booking.attendeeName} ({booking.attendeeEmail})</span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCopyUserInfo(booking);
+                          }}
+                          className="p-1 hover:bg-gray-150 rounded text-gray-400 hover:text-gray-900 transition-all cursor-pointer inline-flex items-center justify-center shrink-0"
+                          title="Copy Details"
+                        >
+                          {copiedBookingId === booking.id ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                        </button>
                       </p>
                     </div>
                   </div>

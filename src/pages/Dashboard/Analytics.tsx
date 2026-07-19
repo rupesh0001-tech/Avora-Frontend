@@ -10,7 +10,9 @@ import {
   ArrowUpRight, 
   Briefcase, 
   CreditCard,
-  RefreshCw
+  RefreshCw,
+  Copy,
+  Check
 } from "lucide-react";
 import { useApi } from "../../lib/api";
 import { Select } from "../../components/ui/Select";
@@ -30,6 +32,7 @@ interface Booking {
   status: string;
   attendeeName: string;
   attendeeEmail: string;
+  attendeePhone: string | null;
   eventType: EventType;
 }
 
@@ -65,6 +68,40 @@ export default function AnalyticsPage({ eventTypeId, showTitle = true }: Analyti
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+
+  // Copy booking details state & handler
+  const [copiedBookingId, setCopiedBookingId] = useState<string | null>(null);
+
+  const handleCopyUserInfo = (b: Booking) => {
+    const hasPayment = b.eventType?.paymentEnabled && b.eventType?.price > 0;
+    const formattedDate = new Date(b.startTime).toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+    const formattedTime = new Date(b.startTime).toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+
+    const textToCopy = [
+      `Name: ${b.attendeeName}`,
+      `Email: ${b.attendeeEmail}`,
+      b.attendeePhone ? `Phone: ${b.attendeePhone}` : null,
+      `Meeting Type: ${b.eventType?.title || "Custom Meeting"}`,
+      `Date: ${formattedDate}`,
+      `Time: ${formattedTime}`,
+      `Status: ${b.status === "pending_payment" ? "Pending Payment" : b.status}`,
+      hasPayment ? `Price: ${CURRENCY_SYMBOLS[b.eventType.currency] || b.eventType.currency} ${b.eventType.price.toFixed(2)}` : "Price: Free",
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    navigator.clipboard.writeText(textToCopy);
+    setCopiedBookingId(b.id);
+    setTimeout(() => setCopiedBookingId(null), 2000);
+  };
 
   const fetchData = async (silent = false) => {
     try {
@@ -520,7 +557,16 @@ export default function AnalyticsPage({ eventTypeId, showTitle = true }: Analyti
                       <tr key={b.id} className="hover:bg-[#FDFBF2]/20 transition-all text-xs text-[#171614]">
                         {/* Attendee */}
                         <td className="py-4.5 px-6">
-                          <div className="font-bold text-[#171614]">{b.attendeeName}</div>
+                          <div className="flex items-center gap-1.5 font-bold text-[#171614]">
+                            <span>{b.attendeeName}</span>
+                            <button
+                              onClick={() => handleCopyUserInfo(b)}
+                              className="p-1 hover:bg-gray-150 rounded text-gray-400 hover:text-gray-900 transition-all cursor-pointer inline-flex items-center justify-center shrink-0"
+                              title="Copy Details"
+                            >
+                              {copiedBookingId === b.id ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                            </button>
+                          </div>
                           <div className="text-[10px] text-[#2B2A27]/50 mt-0.5">{b.attendeeEmail}</div>
                         </td>
 
