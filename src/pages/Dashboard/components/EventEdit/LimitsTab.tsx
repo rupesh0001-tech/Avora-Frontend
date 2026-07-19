@@ -150,7 +150,7 @@ export function LimitsTab({
                 min="0"
                 value={noticeValue}
                 onChange={(e) => handleNoticeChange(Number(e.target.value) || 0, noticeUnit)}
-                className="col-span-3 px-4 py-2.5 text-xs bg-white border border-[#E4E1D4] rounded-xl focus:outline-none focus:border-[#B7ACF7] transition-all font-semibold text-[#171614]"
+                className="col-span-3 px-4 py-2.5 text-sm bg-white border border-[#E4E1D4] rounded-xl focus:outline-none focus:border-[#B7ACF7] transition-all font-semibold text-[#171614]"
               />
               <Select
                 value={noticeUnit}
@@ -161,7 +161,7 @@ export function LimitsTab({
                   { value: "days", label: "Days" },
                 ]}
                 className="col-span-2"
-                buttonClassName="w-full px-4 py-2.5 border border-[#E4E1D4] rounded-xl bg-white font-bold text-[#171614] text-xs text-left flex justify-between items-center hover:bg-[#FDFBF2] transition-all cursor-pointer"
+                buttonClassName="w-full px-4 py-2.5 border border-[#E4E1D4] rounded-xl bg-white font-semibold text-[#171614] text-sm text-left flex justify-between items-center hover:bg-[#FDFBF2] transition-all cursor-pointer"
               />
             </div>
           </div>
@@ -224,7 +224,7 @@ export function LimitsTab({
                       maxBookings: parseInt(e.target.value, 10) || 1,
                     })
                   }
-                  className="w-20 px-3 py-2 border border-[#E4E1D4] rounded-xl text-xs text-center font-bold text-[#171614] bg-white focus:outline-none focus:border-[#B7ACF7] transition-all"
+                  className="w-20 px-3 py-2.5 border border-[#E4E1D4] rounded-xl text-sm text-center font-semibold text-[#171614] bg-white focus:outline-none focus:border-[#B7ACF7] transition-all"
                 />
                 <span className="text-xs font-bold text-[#171614]">per</span>
                 <Select
@@ -236,7 +236,7 @@ export function LimitsTab({
                     { value: "month", label: "Month" },
                   ]}
                   className="w-32"
-                  buttonClassName="w-full px-3 py-2 border border-[#E4E1D4] rounded-xl bg-white font-bold text-[#171614] text-xs text-left flex justify-between items-center hover:bg-[#FDFBF2] transition-all cursor-pointer"
+                  buttonClassName="w-full px-4 py-2.5 border border-[#E4E1D4] rounded-xl bg-white font-semibold text-[#171614] text-sm text-left flex justify-between items-center hover:bg-[#FDFBF2] transition-all cursor-pointer"
                 />
               </div>
             )}
@@ -278,7 +278,7 @@ export function LimitsTab({
                       maxMinutes: parseInt(e.target.value, 10) || 30,
                     })
                   }
-                  className="w-24 px-3 py-2 border border-[#E4E1D4] rounded-xl text-xs text-center font-bold text-[#171614] bg-white focus:outline-none focus:border-[#B7ACF7] transition-all"
+                  className="w-24 px-3 py-2.5 border border-[#E4E1D4] rounded-xl text-sm text-center font-semibold text-[#171614] bg-white focus:outline-none focus:border-[#B7ACF7] transition-all"
                 />
                 <span className="text-xs font-bold text-[#171614]">minutes per</span>
                 <Select
@@ -292,7 +292,7 @@ export function LimitsTab({
                     { value: "month", label: "Month" },
                   ]}
                   className="w-32"
-                  buttonClassName="w-full px-3 py-2 border border-[#E4E1D4] rounded-xl bg-white font-bold text-[#171614] text-xs text-left flex justify-between items-center hover:bg-[#FDFBF2] transition-all cursor-pointer"
+                  buttonClassName="w-full px-4 py-2.5 border border-[#E4E1D4] rounded-xl bg-white font-semibold text-[#171614] text-sm text-left flex justify-between items-center hover:bg-[#FDFBF2] transition-all cursor-pointer"
                 />
               </div>
             )}
@@ -334,7 +334,7 @@ export function LimitsTab({
                       days: parseInt(e.target.value, 10) || 30,
                     })
                   }
-                  className="w-20 px-3 py-2 border border-[#E4E1D4] rounded-xl text-xs text-center font-bold text-[#171614] bg-white focus:outline-none focus:border-[#B7ACF7] transition-all"
+                  className="w-20 px-3 py-2.5 border border-[#E4E1D4] rounded-xl text-sm text-center font-semibold text-[#171614] bg-white focus:outline-none focus:border-[#B7ACF7] transition-all"
                 />
                 <span className="text-xs font-bold text-[#171614]">days in the future</span>
               </div>
@@ -377,7 +377,7 @@ export function LimitsTab({
                       maxBookings: parseInt(e.target.value, 10) || 1,
                     })
                   }
-                  className="w-20 px-3 py-2 border border-[#E4E1D4] rounded-xl text-xs text-center font-bold text-[#171614] bg-white focus:outline-none focus:border-[#B7ACF7] transition-all"
+                  className="w-20 px-3 py-2.5 border border-[#E4E1D4] rounded-xl text-sm text-center font-semibold text-[#171614] bg-white focus:outline-none focus:border-[#B7ACF7] transition-all"
                 />
                 <span className="text-xs font-bold text-[#171614]">per guest email</span>
               </div>

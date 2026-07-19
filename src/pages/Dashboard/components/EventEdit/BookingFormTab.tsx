@@ -85,7 +85,7 @@ export function BookingFormTab({
                 value={newFieldLabel}
                 onChange={(e) => setNewFieldLabel(e.target.value)}
                 placeholder="e.g. What is your company size?"
-                className="w-full px-3 py-2 border border-[#E4E1D4] rounded-lg text-xs bg-white font-semibold text-[#171614] focus:outline-none focus:border-[#B7ACF7]"
+                className="w-full px-4 py-2.5 border border-[#E4E1D4] rounded-xl text-sm bg-white font-semibold text-[#171614] focus:outline-none focus:border-[#B7ACF7] transition-all"
               />
             </div>
             <div className="space-y-1.5">
@@ -99,7 +99,7 @@ export function BookingFormTab({
                   { value: "Phone", label: "Phone" },
                   { value: "Multiple Emails", label: "Multiple Emails" },
                 ]}
-                buttonClassName="w-full px-3 py-2 border border-[#E4E1D4] rounded-lg text-xs bg-white font-semibold text-[#171614] text-left flex justify-between items-center hover:bg-[#FDFBF2] transition-all cursor-pointer"
+                buttonClassName="w-full px-4 py-2.5 border border-[#E4E1D4] rounded-xl text-sm bg-white font-semibold text-[#171614] text-left flex justify-between items-center hover:bg-[#FDFBF2] transition-all cursor-pointer"
               />
             </div>
             <div className="space-y-1.5">
@@ -112,7 +112,7 @@ export function BookingFormTab({
                   { value: "Optional", label: "Optional" },
                   { value: "Hidden", label: "Hidden" },
                 ]}
-                buttonClassName="w-full px-3 py-2 border border-[#E4E1D4] rounded-lg text-xs bg-white font-semibold text-[#171614] text-left flex justify-between items-center hover:bg-[#FDFBF2] transition-all cursor-pointer"
+                buttonClassName="w-full px-4 py-2.5 border border-[#E4E1D4] rounded-xl text-sm bg-white font-semibold text-[#171614] text-left flex justify-between items-center hover:bg-[#FDFBF2] transition-all cursor-pointer"
               />
             </div>
           </div>
@@ -137,7 +137,7 @@ export function BookingFormTab({
                     type="text"
                     value={editingLabel}
                     onChange={(e) => setEditingLabel(e.target.value)}
-                    className="flex-1 px-3 py-1.5 border border-[#E4E1D4] rounded-lg text-xs bg-white font-semibold text-[#171614] focus:outline-none focus:border-[#B7ACF7]"
+                    className="flex-1 px-4 py-2 border border-[#E4E1D4] rounded-xl text-sm bg-white font-semibold text-[#171614] focus:outline-none focus:border-[#B7ACF7] transition-all"
                   />
                   <button
                     onClick={() => onSaveFieldLabel(field.id)}

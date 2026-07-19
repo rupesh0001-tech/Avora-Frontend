@@ -46,8 +46,8 @@ export function Select({
         onClick={() => {
           setIsOpen((prev) => !prev);
         }}
-        className={`font-sans ${buttonClassName || `w-full h-full border border-[#E4E1D4] rounded-xl bg-white font-bold text-[#171614] text-left flex justify-between items-center hover:bg-[#FDFBF2] transition-all cursor-pointer ${
-          size === "sm" ? "px-3 py-1.5 text-xs" : "px-4 py-2.5 text-xs"
+        className={`font-sans ${buttonClassName || `w-full h-full border border-[#E4E1D4] rounded-xl bg-white font-semibold text-[#171614] text-left flex justify-between items-center hover:bg-[#FDFBF2] transition-all cursor-pointer ${
+          size === "sm" ? "px-3 py-1.5 text-xs" : "px-4 py-2.5 text-sm"
         }`}`}
       >
         <span>{selectedOption ? selectedOption.label : ""}</span>
@@ -65,7 +65,7 @@ export function Select({
                 setIsOpen(false);
               }}
               className={`w-full text-left font-sans hover:bg-[#7CEFC0]/20 hover:text-[#171614] transition-colors cursor-pointer ${
-                size === "sm" ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-xs"
+                size === "sm" ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm"
               }`}
             >
               {opt.label}
