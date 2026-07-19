@@ -99,7 +99,7 @@ export function BookingFormTab({
                   { value: "Phone", label: "Phone" },
                   { value: "Multiple Emails", label: "Multiple Emails" },
                 ]}
-                size="sm"
+                buttonClassName="w-full px-3 py-2 border border-[#E4E1D4] rounded-lg text-xs bg-white font-semibold text-[#171614] text-left flex justify-between items-center hover:bg-[#FDFBF2] transition-all cursor-pointer"
               />
             </div>
             <div className="space-y-1.5">
@@ -112,7 +112,7 @@ export function BookingFormTab({
                   { value: "Optional", label: "Optional" },
                   { value: "Hidden", label: "Hidden" },
                 ]}
-                size="sm"
+                buttonClassName="w-full px-3 py-2 border border-[#E4E1D4] rounded-lg text-xs bg-white font-semibold text-[#171614] text-left flex justify-between items-center hover:bg-[#FDFBF2] transition-all cursor-pointer"
               />
             </div>
           </div>

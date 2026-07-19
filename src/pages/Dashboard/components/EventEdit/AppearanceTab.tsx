@@ -35,7 +35,7 @@ export function AppearanceTab({ appearance, onSave, eventTypeId }: AppearanceTab
         >
           <div>
             <div className="flex justify-between items-center mb-2">
-              <span className="font-bold text-sm text-[#171614]">⚡ Neo-Brutalist Classic</span>
+              <span className="font-bold text-sm text-[#171614]">Neo-Brutalist Classic</span>
               {appearance === "classic" && <Check className="w-4 h-4 text-[#171614] stroke-[3]" />}
             </div>
             <p className="text-[11px] text-[#2B2A27]/70 font-semibold">Thick black borders, high contrast palettes, and heavy retro shadow effects.</p>
@@ -78,7 +78,7 @@ export function AppearanceTab({ appearance, onSave, eventTypeId }: AppearanceTab
         >
           <div>
             <div className="flex justify-between items-center mb-2">
-              <span className="font-bold text-sm text-gray-900">✨ Modern Minimalist</span>
+              <span className="font-bold text-sm text-gray-900">Modern Minimalist</span>
               {appearance === "minimal" && <Check className="w-4 h-4 text-blue-600 stroke-[3]" />}
             </div>
             <p className="text-[11px] text-[#2B2A27]/70 font-semibold">Subtle grey margins, warm typography, and no block shadows. Pure elegance.</p>
@@ -121,7 +121,7 @@ export function AppearanceTab({ appearance, onSave, eventTypeId }: AppearanceTab
         >
           <div>
             <div className="flex justify-between items-center mb-2">
-              <span className="font-bold text-sm text-[#171614]">🕶 Dark Mode Glass</span>
+              <span className="font-bold text-sm text-[#171614]">Dark Mode Glass</span>
               {appearance === "dark" && <Check className="w-4 h-4 text-emerald-600 stroke-[3]" />}
             </div>
             <p className="text-[11px] text-[#2B2A27]/70 font-semibold">Translucent dark layout panels, glow effects, and modern workspace gradients.</p>
@@ -164,7 +164,7 @@ export function AppearanceTab({ appearance, onSave, eventTypeId }: AppearanceTab
         >
           <div>
             <div className="flex justify-between items-center mb-2">
-              <span className="font-bold text-sm text-[#1E2E1F]">🌿 Cozy Sage</span>
+              <span className="font-bold text-sm text-[#1E2E1F]">Cozy Sage</span>
               {appearance === "sage" && <Check className="w-4 h-4 text-emerald-800 stroke-[3]" />}
             </div>
             <p className="text-[11px] text-[#2B2A27]/70 font-semibold">Soft sage green outlines, organic rounded corners, and pastel background colors.</p>
