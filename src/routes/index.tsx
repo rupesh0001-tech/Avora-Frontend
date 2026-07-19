@@ -16,6 +16,7 @@ import SettingsPage from "../pages/Dashboard/Settings";
 import OnboardingPage from "../pages/Onboarding";
 import EventEditPage from "../pages/Dashboard/EventEdit";
 import BookingPage from "../pages/Booking";
+import DemoPreviewPage from "../pages/Preview";
 
 export function AppRoutes() {
   return (
@@ -46,6 +47,7 @@ export function AppRoutes() {
       <Route path="/dashboard/events/:id/edit" element={<EventEditPage />} />
       <Route path="/onboarding" element={<OnboardingPage />} />
       <Route path="/book/:username/:slug" element={<BookingPage />} />
+      <Route path="/preview" element={<DemoPreviewPage />} />
 
       {/* Catch-all 404 Route */}
       <Route element={<PublicLayout />}>

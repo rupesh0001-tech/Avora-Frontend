@@ -10,6 +10,7 @@ import { BasicsTab } from "./components/EventEdit/BasicsTab";
 import { AvailabilityTab } from "./components/EventEdit/AvailabilityTab";
 import { BookingFormTab } from "./components/EventEdit/BookingFormTab";
 import { AppearanceTab } from "./components/EventEdit/AppearanceTab";
+import { BookingsTab } from "./components/EventEdit/BookingsTab";
 
 interface EventType {
   id: string;
@@ -248,6 +249,7 @@ export function EventEditPage() {
     { id: "availability", name: "Availability", icon: Calendar },
     { id: "bookingForm", name: "Booking Form", icon: MessageSquare },
     { id: "appearance", name: "Appearance", icon: Sparkles },
+    { id: "bookings", name: "View Bookings", icon: Calendar },
     { id: "payments", name: "Payment & Seats", icon: Shield, comingSoon: true },
     { id: "limits", name: "Limits & Buffers", icon: Clock, comingSoon: true },
     { id: "reschedule", name: "Reschedule & Cancel", icon: Clock, comingSoon: true },
@@ -390,7 +392,13 @@ export function EventEditPage() {
             <AppearanceTab
               appearance={appearance}
               onSave={handleSaveAppearance}
+              eventTypeId={event.id}
             />
+          )}
+
+          {/* VIEW BOOKINGS PANEL */}
+          {activeTab === "bookings" && (
+            <BookingsTab eventTypeId={event.id} />
           )}
 
           {/* DUMMY/COMING SOON PANELS */}

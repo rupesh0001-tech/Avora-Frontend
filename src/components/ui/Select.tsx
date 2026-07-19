@@ -32,7 +32,7 @@ export function Select({ value, onChange, options, className = "", size = "md" }
           e.stopPropagation();
           setIsOpen(!isOpen);
         }}
-        className={`w-full border border-[#E4E1D4] rounded-xl bg-white font-bold text-[#171614] text-left flex justify-between items-center hover:bg-[#FDFBF2] transition-all cursor-pointer ${
+        className={`w-full h-full border border-[#E4E1D4] rounded-xl bg-white font-bold text-[#171614] text-left flex justify-between items-center hover:bg-[#FDFBF2] transition-all cursor-pointer ${
           size === "sm" ? "px-3 py-1.5 text-xs" : "px-4 py-2.5 text-sm"
         }`}
       >
