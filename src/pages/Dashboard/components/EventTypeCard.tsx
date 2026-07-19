@@ -1,4 +1,5 @@
 import React from "react";
+import clsx from "clsx";
 import { Link } from "react-router-dom";
 import { Clock, Video, MapPin, Copy, ExternalLink, Check } from "lucide-react";
 import { Switch } from "../../../components/ui/Switch";
@@ -36,9 +37,9 @@ export function EventTypeCard({
       }`}
     >
       {/* Top Bar with status & action dropdown */}
-      <div className="p-6 border-b border-[#E4E1D4] flex-1">
-        <div className="flex justify-between items-center mb-4">
-          <span className="text-xs font-bold text-[#171614] bg-[#F3E75B] px-3 py-1 rounded-xl border border-[#171614]/15">
+      <div className={clsx('p-6', 'border-b', 'border-[#E4E1D4]', 'flex-1')}>
+        <div className={clsx('flex', 'justify-between', 'items-center', 'mb-4')}>
+          <span className={clsx('text-xs', 'font-bold', 'text-[#171614]', 'bg-[#F3E75B]', 'px-3', 'py-1', 'rounded-xl', 'border', 'border-[#171614]/15')}>
             {et.duration} mins
           </span>
           
@@ -50,29 +51,29 @@ export function EventTypeCard({
         </div>
 
         {/* Title & Price */}
-        <Link to={`/dashboard/events/${et.id}/edit`} className="block hover:underline">
-          <h3 className="font-cal-sans text-lg font-bold text-[#171614] uppercase tracking-wide mb-2 line-clamp-1">
+        <Link to={`/dashboard/events/${et.id}/edit`} className={clsx('block', 'hover:underline')}>
+          <h3 className={clsx('font-cal-sans', 'text-lg', 'font-bold', 'text-[#171614]', 'uppercase', 'tracking-wide', 'mb-2', 'line-clamp-1')}>
             {et.title}
           </h3>
         </Link>
         
         <div className="mb-4">
-          <span className="inline-block text-xs font-extrabold text-[#171614] bg-[#B7ACF7] border border-[#171614]/15 px-2.5 py-0.5 rounded-md">
+          <span className={clsx('inline-block', 'text-xs', 'font-extrabold', 'text-[#171614]', 'bg-[#B7ACF7]', 'border', 'border-[#171614]/15', 'px-2.5', 'py-0.5', 'rounded-md')}>
             {et.price > 0 ? `$${et.price}.00` : "Free"}
           </span>
         </div>
 
         {/* Meeting Meta details */}
-        <div className="space-y-2.5 text-xs text-[#2B2A27] font-semibold">
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-[#171614]" />
+        <div className={clsx('space-y-2.5', 'text-xs', 'text-[#2B2A27]', 'font-semibold')}>
+          <div className={clsx('flex', 'items-center', 'gap-2')}>
+            <Clock className={clsx('w-4', 'h-4', 'text-[#171614]')} />
             <span>1-on-1 • {et.duration} min session</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className={clsx('flex', 'items-center', 'gap-2')}>
             {et.locationType === "Video" ? (
-              <Video className="w-4 h-4 text-[#171614]" />
+              <Video className={clsx('w-4', 'h-4', 'text-[#171614]')} />
             ) : (
-              <MapPin className="w-4 h-4 text-[#171614]" />
+              <MapPin className={clsx('w-4', 'h-4', 'text-[#171614]')} />
             )}
             <span>
               {et.locationType} ({et.locationDetails})
@@ -82,14 +83,14 @@ export function EventTypeCard({
       </div>
 
       {/* Bottom Actions */}
-      <div className="bg-[#FDFBF2] px-6 py-4 flex items-center justify-between">
+      <div className={clsx('bg-[#FDFBF2]', 'px-6', 'py-4', 'flex', 'items-center', 'justify-between')}>
         <a
           href={`/book/${username}/${et.slug}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs font-bold text-[#2B2A27] hover:text-[#171614] hover:underline flex items-center gap-1.5 transition-colors"
+          className={clsx('text-xs', 'font-bold', 'text-[#2B2A27]', 'hover:text-[#171614]', 'hover:underline', 'flex', 'items-center', 'gap-1.5', 'transition-colors')}
         >
-          <ExternalLink className="w-3.5 h-3.5" />
+          <ExternalLink className={clsx('w-3.5', 'h-3.5')} />
           Preview page
         </a>
         <button
@@ -100,12 +101,12 @@ export function EventTypeCard({
         >
           {copiedId === et.id ? (
             <>
-              <Check className="w-3.5 h-3.5 stroke-[3]" />
+              <Check className={clsx('w-3.5', 'h-3.5', 'stroke-[3]')} />
               Copied!
             </>
           ) : (
             <>
-              <Copy className="w-3.5 h-3.5" />
+              <Copy className={clsx('w-3.5', 'h-3.5')} />
               Copy link
             </>
           )}

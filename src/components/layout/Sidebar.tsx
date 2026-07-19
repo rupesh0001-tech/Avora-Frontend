@@ -3,6 +3,8 @@ import { Link, useLocation } from "react-router-dom";
 import { UserButton } from "@clerk/react";
 import { Clock, Calendar, LayoutDashboard, Settings } from "lucide-react";
 import { Logo } from "../ui/Logo";
+import clsx from "clsx";
+
 
 export function Sidebar() {
   const location = useLocation();
@@ -15,13 +17,13 @@ export function Sidebar() {
   ];
 
   return (
-    <aside className="w-64 border-r border-[#E4E1D4] bg-white flex flex-col justify-between">
+    <aside className={clsx('w-64', 'border-r', 'border-[#E4E1D4]', 'bg-white', 'flex', 'flex-col', 'justify-between')}>
       <div>
         {/* Logo container with thin bottom border */}
-        <div className="h-16 border-b border-[#E4E1D4] bg-[#F3E75B] flex items-center px-6">
+        <div className={clsx('h-16', 'border-b', 'border-[#E4E1D4]', 'bg-[#F3E75B]', 'flex', 'items-center', 'px-6')}>
           <Logo />
         </div>
-        <nav className="p-4 space-y-2.5">
+        <nav className={clsx('p-4', 'space-y-2.5')}>
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
@@ -35,7 +37,7 @@ export function Sidebar() {
                     : "text-[#2B2A27] border-transparent hover:border-[#171614]/15 hover:bg-white hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[2px_2px_0_rgba(23,22,20,0.08)]"
                 }`}
               >
-                <Icon className="h-4 w-4 stroke-[2.5]" />
+                <Icon className={clsx('h-4', 'w-4', 'stroke-[2.5]')} />
                 {item.name}
               </Link>
             );
@@ -44,8 +46,8 @@ export function Sidebar() {
       </div>
 
       {/* Footer profile container with thin top border */}
-      <div className="p-4 border-t border-[#E4E1D4] bg-[#FDFBF2] flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className={clsx('p-4', 'border-t', 'border-[#E4E1D4]', 'bg-[#FDFBF2]', 'flex', 'items-center', 'justify-end', 'text-8xl', 'font-semibold')}>
+        <div className={clsx('flex', 'items-center', 'gap-2', 'justify-between')}>
           <UserButton showName />
         </div>
       </div>

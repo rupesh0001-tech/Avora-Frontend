@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
+import clsx from "clsx";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Clock, Calendar, Sparkles, MessageSquare, Shield, HelpCircle } from "lucide-react";
+import { ArrowLeft, Clock, Calendar, Sparkles, MessageSquare, Shield, HelpCircle, SquareArrowOutDownRight } from "lucide-react";
 import { useApi } from "../../lib/api";
 import { Button } from "../../components/ui/Button";
 
@@ -227,16 +228,16 @@ export function EventEditPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-[#FDFBF2]">
-        <div className="w-12 h-12 rounded-full border-4 border-[#171614] border-t-transparent animate-spin"></div>
+      <div className={clsx('flex', 'h-screen', 'w-screen', 'items-center', 'justify-center', 'bg-[#FDFBF2]')}>
+        <div className={clsx('w-12', 'h-12', 'rounded-full', 'border-4', 'border-[#171614]', 'border-t-transparent', 'animate-spin')}></div>
       </div>
     );
   }
 
   if (!event) {
     return (
-      <div className="text-center py-20 bg-[#FDFBF2] h-screen flex flex-col justify-center items-center">
-        <h3 className="font-cal-sans text-2xl font-bold mb-4">Event Type Not Found</h3>
+      <div className={clsx('text-center', 'py-20', 'bg-[#FDFBF2]', 'h-screen', 'flex', 'flex-col', 'justify-center', 'items-center')}>
+        <h3 className={clsx('font-cal-sans', 'text-2xl', 'font-bold', 'mb-4')}>Event Type Not Found</h3>
         <Button to="/dashboard" variant="primary" size="md">Back to Dashboard</Button>
       </div>
     );
@@ -254,16 +255,26 @@ export function EventEditPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#FDFBF2] flex flex-col">
+    <div className={clsx('min-h-screen', 'bg-[#FDFBF2]', 'flex', 'flex-col')}>
       {/* Edit Header */}
-      <header className="h-16 px-8 flex items-center justify-between border-b border-[#E4E1D4] bg-white">
-        <div className="flex items-center gap-4">
-          <Link to="/dashboard" className="p-2 border border-transparent hover:border-[#171614]/15 hover:bg-[#FDFBF2] rounded-xl transition-all">
-            <ArrowLeft className="w-4 h-4 text-[#171614]" />
+      <header className={clsx('h-16', 'px-8', 'flex', 'items-center', 'justify-between', 'border-b', 'border-[#E4E1D4]', 'bg-white')}>
+        <div className={clsx('flex', 'items-center', 'gap-4')}>
+          <Link to="/dashboard" className={clsx('p-2', 'border', 'border-transparent', 'hover:border-[#171614]/15', 'hover:bg-[#FDFBF2]', 'rounded-xl', 'transition-all')}>
+            <ArrowLeft className={clsx('w-4', 'h-4', 'text-[#171614]')} />
           </Link>
-          <div className="leading-tight">
-            <h1 className="font-cal-sans text-md font-bold text-[#171614] uppercase tracking-wider">{event.title}</h1>
-            <p className="text-xs font-semibold text-[#2B2A27]/60">{window.location.host}/{username}/{event.slug}</p>
+          <div className={clsx('leading-tight')}>
+            <a
+              href={`/book/${username}/${event.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={clsx('block', 'hover:opacity-80')}
+            >
+              <h1 className={clsx('font-cal-sans', 'text-md', 'font-bold', 'text-[#171614]', 'uppercase', 'tracking-wider')}>{event.title}</h1>
+              <div className={clsx('flex', 'items-center', 'gap-1.5', 'text-xs', 'font-semibold', 'text-[#2B2A27]/60', 'mt-0.5')}>
+                <span>{window.location.host}/book/{username}/{event.slug}</span>
+                <SquareArrowOutDownRight className={clsx('w-3.5', 'h-3.5')} />
+              </div>
+            </a>
           </div>
         </div>
 
@@ -275,16 +286,16 @@ export function EventEditPage() {
           </div>
         )}
 
-        <div className="text-xs font-bold text-[#2B2A27]/60">
+        <div className={clsx('text-xs', 'font-bold', 'text-[#2B2A27]/60')}>
           Auto-saves layouts
         </div>
       </header>
 
       {/* Main composition container */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className={clsx('flex-1', 'flex', 'overflow-hidden')}>
         
         {/* Left inner sidebar */}
-        <aside className="w-64 border-r border-[#E4E1D4] bg-white p-4 space-y-1.5 overflow-y-auto">
+        <aside className={clsx('w-64', 'border-r', 'border-[#E4E1D4]', 'bg-white', 'p-4', 'space-y-1.5', 'overflow-y-auto')}>
           {sidebarTabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -298,12 +309,12 @@ export function EventEditPage() {
                     : "text-[#2B2A27] border-transparent hover:border-[#171614]/15 hover:bg-[#FDFBF2]"
                 }`}
               >
-                <span className="flex items-center gap-3">
-                  <Icon className="w-4 h-4 shrink-0 text-[#171614]" />
+                <span className={clsx('flex', 'items-center', 'gap-3')}>
+                  <Icon className={clsx('w-4', 'h-4', 'shrink-0', 'text-[#171614]')} />
                   {tab.name}
                 </span>
                 {tab.comingSoon && (
-                  <span className="text-[9px] bg-[#E4E1D4]/60 border border-[#171614]/10 text-[#171614]/70 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider scale-95">
+                  <span className={clsx('text-[9px]', 'bg-[#E4E1D4]/60', 'border', 'border-[#171614]/10', 'text-[#171614]/70', 'px-1.5', 'py-0.5', 'rounded-md', 'font-bold', 'uppercase', 'tracking-wider', 'scale-95')}>
                     Soon
                   </span>
                 )}
@@ -313,7 +324,7 @@ export function EventEditPage() {
         </aside>
 
         {/* Right workspace panels */}
-        <main className="flex-1 p-8 overflow-y-auto max-w-4xl mx-auto">
+        <main className={clsx('flex-1', 'p-8', 'overflow-y-auto', 'max-w-4xl', 'mx-auto')}>
           
           {/* BASICS PANEL */}
           {activeTab === "basics" && (
@@ -384,10 +395,10 @@ export function EventEditPage() {
 
           {/* DUMMY/COMING SOON PANELS */}
           {["payments", "limits", "reschedule", "webhooks"].includes(activeTab) && (
-            <div className="bg-white border border-[#E4E1D4] rounded-2xl p-12 text-center shadow-[3px_3px_0_rgba(23,22,20,0.08)] space-y-4">
-              <Sparkles className="w-12 h-12 text-[#171614] mx-auto opacity-75" />
-              <h3 className="font-cal-sans text-xl font-bold uppercase tracking-wider text-[#171614]">Coming Soon!</h3>
-              <p className="text-[#2B2A27]/70 text-sm max-w-sm mx-auto font-semibold">
+            <div className={clsx('bg-white', 'border', 'border-[#E4E1D4]', 'rounded-2xl', 'p-12', 'text-center', 'shadow-[3px_3px_0_rgba(23,22,20,0.08)]', 'space-y-4')}>
+              <Sparkles className={clsx('w-12', 'h-12', 'text-[#171614]', 'mx-auto', 'opacity-75')} />
+              <h3 className={clsx('font-cal-sans', 'text-xl', 'font-bold', 'uppercase', 'tracking-wider', 'text-[#171614]')}>Coming Soon!</h3>
+              <p className={clsx('text-[#2B2A27]/70', 'text-sm', 'max-w-sm', 'mx-auto', 'font-semibold')}>
                 We are building the rest of the layout configurations very soon. Stay tuned!
               </p>
             </div>
