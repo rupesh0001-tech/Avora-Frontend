@@ -494,7 +494,7 @@ export default function AnalyticsPage({ eventTypeId, showTitle = true }: Analyti
             <>
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-[#E4E1D4] text-xs font-bold uppercase tracking-wider text-[#2B2A27]/60 bg-gray-50/30">
+                  <tr className="border-b border-[#E4E1D4] text-[10px] font-extrabold uppercase tracking-wider text-[#2B2A27]/55 bg-gray-50/30">
                     <th className="py-3.5 px-6">Attendee</th>
                     <th className="py-3.5 px-6">Scheduled Date</th>
                     <th className="py-3.5 px-6">Meeting Type</th>
@@ -517,7 +517,7 @@ export default function AnalyticsPage({ eventTypeId, showTitle = true }: Analyti
                     });
 
                     return (
-                      <tr key={b.id} className="hover:bg-[#FDFBF2]/20 transition-all text-xs font-semibold text-[#171614]">
+                      <tr key={b.id} className="hover:bg-[#FDFBF2]/20 transition-all text-xs text-[#171614]">
                         {/* Attendee */}
                         <td className="py-4.5 px-6">
                           <div className="font-bold text-[#171614]">{b.attendeeName}</div>
@@ -526,12 +526,12 @@ export default function AnalyticsPage({ eventTypeId, showTitle = true }: Analyti
 
                         {/* Scheduled Date */}
                         <td className="py-4.5 px-6">
-                          <div>{formattedDate}</div>
+                          <div className="font-semibold">{formattedDate}</div>
                           <div className="text-[10px] text-[#2B2A27]/50 mt-0.5">{formattedTime}</div>
                         </td>
 
                         {/* Meeting Type */}
-                        <td className="py-4.5 px-6 font-bold uppercase text-[10px] tracking-wide">
+                        <td className="py-4.5 px-6 text-xs font-semibold text-[#171614]">
                           {b.eventType?.title || "Custom Meeting"}
                         </td>
 
@@ -539,24 +539,24 @@ export default function AnalyticsPage({ eventTypeId, showTitle = true }: Analyti
                         <td className="py-4.5 px-6 text-center">
                           <span 
                             className={clsx(
-                              "inline-block px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wide border",
+                              "inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border",
                               b.status === "confirmed" && "bg-emerald-50 text-emerald-700 border-emerald-250",
                               b.status === "cancelled" && "bg-red-50 text-red-600 border-red-200",
                               b.status === "pending_payment" && "bg-amber-50 text-amber-600 border-amber-250"
                             )}
                           >
-                            {b.status === "pending_payment" ? "Pending Payment" : b.status}
+                            {b.status === "pending_payment" ? "Pending" : b.status}
                           </span>
                         </td>
 
                         {/* Payment/Price */}
-                        <td className="py-4.5 px-6 text-right font-cal-sans text-sm font-bold">
+                        <td className="py-4.5 px-6 text-right text-xs font-bold">
                           {hasPayment ? (
                             <span className={clsx(b.status === "confirmed" ? "text-emerald-700" : "text-amber-600")}>
                               {CURRENCY_SYMBOLS[b.eventType.currency] || b.eventType.currency} {b.eventType.price.toFixed(2)}
                             </span>
                           ) : (
-                            <span className="text-[#2B2A27]/40 text-xs uppercase font-sans font-bold">Free</span>
+                            <span className="text-[#2B2A27]/40 text-xs uppercase font-bold">Free</span>
                           )}
                         </td>
                       </tr>
