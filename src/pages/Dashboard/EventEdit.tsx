@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import clsx from "clsx";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Clock, Calendar, Sparkles, MessageSquare, Shield, HelpCircle, SquareArrowOutDownRight } from "lucide-react";
+import { ArrowLeft, Clock, Calendar, Sparkles, MessageSquare, Shield, HelpCircle, SquareArrowOutDownRight, BarChart3 } from "lucide-react";
 import { useApi } from "../../lib/api";
 import { Button } from "../../components/ui/Button";
+import AnalyticsPage from "./Analytics";
 
 // Import modular tab components
 import { BasicsTab } from "./components/EventEdit/BasicsTab";
@@ -317,6 +318,7 @@ export function EventEditPage() {
     { id: "bookingForm", name: "Booking Form", icon: MessageSquare },
     { id: "appearance", name: "Appearance", icon: Sparkles },
     { id: "bookings", name: "View Bookings", icon: Calendar },
+    { id: "analytics", name: "Analytics", icon: BarChart3 },
     { id: "payments", name: "Payment & Seats", icon: Shield },
     { id: "limits", name: "Limits & Buffers", icon: Clock },
     { id: "reschedule", name: "Reschedule & Cancel", icon: Clock, comingSoon: true },
@@ -466,6 +468,11 @@ export function EventEditPage() {
           {/* VIEW BOOKINGS PANEL */}
           {activeTab === "bookings" && (
             <BookingsTab eventTypeId={event.id} />
+          )}
+
+          {/* ANALYTICS PANEL */}
+          {activeTab === "analytics" && (
+            <AnalyticsPage eventTypeId={event.id} showTitle={false} />
           )}
 
           {/* PAYMENTS PANEL */}

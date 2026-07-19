@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { UserButton } from "@clerk/react";
-import { Clock, Calendar, LayoutDashboard, Settings, CalendarDays } from "lucide-react";
+import { Clock, Calendar, LayoutDashboard, Settings, CalendarDays, BarChart3 } from "lucide-react";
 import { Logo } from "../ui/Logo";
 import clsx from "clsx";
 
@@ -14,6 +14,7 @@ export function Sidebar() {
     { name: "Bookings", path: "/dashboard/bookings", icon: Calendar },
     { name: "Availability", path: "/dashboard/availability", icon: LayoutDashboard },
     { name: "Calendar", path: "/dashboard/calendar", icon: CalendarDays },
+    { name: "Analytics", path: "/dashboard/analytics", icon: BarChart3 },
     { name: "Settings", path: "/dashboard/settings", icon: Settings },
   ];
 
