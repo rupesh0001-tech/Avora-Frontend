@@ -45,7 +45,8 @@ export function AppRoutes() {
 
       {/* Standalone Protected Pages */}
       <Route path="/dashboard/events/:id/edit" element={<EventEditPage />} />
-      <Route path="/onboarding" element={<OnboardingPage />} />
+      <Route path="/onboard" element={<OnboardingPage />} />
+      <Route path="/onboarding" element={<Navigate to="/onboard" replace />} />
       <Route path="/book/:username/:slug" element={<BookingPage />} />
       <Route path="/preview" element={<DemoPreviewPage />} />
 
