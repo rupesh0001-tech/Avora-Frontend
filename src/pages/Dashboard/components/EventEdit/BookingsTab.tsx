@@ -143,6 +143,17 @@ export function BookingsTab({ eventTypeId }: BookingsTabProps) {
     return true;
   });
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, startDate, endDate, timeOfDay]);
+
+  const totalPages = Math.max(Math.ceil(filteredBookings.length / itemsPerPage), 1);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedBookings = filteredBookings.slice(startIndex, startIndex + itemsPerPage);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-12 bg-white border border-[#E4E1D4] rounded-2xl shadow-[3px_3px_0_rgba(23,22,20,0.08)]">
@@ -281,7 +292,7 @@ export function BookingsTab({ eventTypeId }: BookingsTabProps) {
         </div>
       ) : (
         <div className="space-y-3.5">
-          {filteredBookings.map((booking) => {
+          {paginatedBookings.map((booking) => {
             const isExpanded = expandedBookingId === booking.id;
             const hasCustomFields = booking.bookingFieldsData && Object.keys(booking.bookingFieldsData).length > 0;
 
@@ -412,6 +423,29 @@ export function BookingsTab({ eventTypeId }: BookingsTabProps) {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Bookings Pagination */}
+      {bookings.length > 0 && filteredBookings.length > 0 && totalPages > 1 && (
+        <div className="flex justify-between items-center px-6 py-3.5 bg-white border border-[#E4E1D4] rounded-2xl shadow-[3px_3px_0_rgba(23,22,20,0.06)] text-xs font-bold text-[#2B2A27] select-none mt-6">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            className="px-3 py-1.5 border border-[#E4E1D4] hover:border-[#171614] rounded-xl bg-white hover:bg-[#FDFBF2] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-[#E4E1D4] disabled:hover:bg-white active:scale-95 disabled:active:scale-100 transition-all text-[#171614] cursor-pointer"
+          >
+            Previous
+          </button>
+          <span className="text-[#2B2A27]/70 font-semibold">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            className="px-3 py-1.5 border border-[#E4E1D4] hover:border-[#171614] rounded-xl bg-white hover:bg-[#FDFBF2] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-[#E4E1D4] disabled:hover:bg-white active:scale-95 disabled:active:scale-100 transition-all text-[#171614] cursor-pointer"
+          >
+            Next
+          </button>
         </div>
       )}
     </div>

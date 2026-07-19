@@ -65,6 +65,17 @@ export default function DashboardPage() {
     et.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, viewMode]);
+
+  const totalPages = Math.max(Math.ceil(filteredEventTypes.length / itemsPerPage), 1);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedEventTypes = filteredEventTypes.slice(startIndex, startIndex + itemsPerPage);
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center py-24">
@@ -127,7 +138,7 @@ export default function DashboardPage() {
         <>
           {viewMode === "cards" && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredEventTypes.map((et) => (
+              {paginatedEventTypes.map((et) => (
                 <EventTypeCard
                   key={et.id}
                   et={et}
@@ -154,7 +165,7 @@ export default function DashboardPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#E4E1D4]/60">
-                    {filteredEventTypes.map((et) => (
+                    {paginatedEventTypes.map((et) => (
                       <tr key={et.id} className="hover:bg-[#FDFBF2]/10 transition-all">
                         {/* Event Type Column */}
                         <td className="py-4 px-6">
@@ -246,7 +257,7 @@ export default function DashboardPage() {
 
           {viewMode === "icons" && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {filteredEventTypes.map((et) => (
+              {paginatedEventTypes.map((et) => (
                 <div
                   key={et.id}
                   className="bg-white border border-[#E4E1D4] hover:border-[#171614]/80 rounded-2xl p-4 shadow-[2px_2px_0_rgba(23,22,20,0.05)] hover:shadow-[3px_3px_0_rgba(23,22,20,0.08)] transition-all flex flex-col justify-between h-36 group relative"
@@ -282,6 +293,29 @@ export default function DashboardPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex justify-between items-center px-6 py-3.5 bg-white border border-[#E4E1D4] rounded-2xl shadow-[3px_3px_0_rgba(23,22,20,0.06)] text-xs font-bold text-[#2B2A27] select-none mt-6">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                className="px-3 py-1.5 border border-[#E4E1D4] hover:border-[#171614] rounded-xl bg-white hover:bg-[#FDFBF2] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-[#E4E1D4] disabled:hover:bg-white active:scale-95 disabled:active:scale-100 transition-all text-[#171614] cursor-pointer"
+              >
+                Previous
+              </button>
+              <span className="text-[#2B2A27]/70 font-semibold">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                className="px-3 py-1.5 border border-[#E4E1D4] hover:border-[#171614] rounded-xl bg-white hover:bg-[#FDFBF2] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-[#E4E1D4] disabled:hover:bg-white active:scale-95 disabled:active:scale-100 transition-all text-[#171614] cursor-pointer"
+              >
+                Next
+              </button>
             </div>
           )}
         </>

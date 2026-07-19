@@ -62,6 +62,10 @@ export default function AnalyticsPage({ eventTypeId, showTitle = true }: Analyti
   const [dateRange, setDateRange] = useState("30days");
   const [filterPaidOnly, setFilterPaidOnly] = useState(false);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
   const fetchData = async (silent = false) => {
     try {
       if (!silent) setIsLoading(true);
@@ -75,6 +79,7 @@ export default function AnalyticsPage({ eventTypeId, showTitle = true }: Analyti
 
       setBookings(bookingsRes.data.bookings || []);
       setEventTypes(eventsRes.data.events || []);
+      setCurrentPage(1); // Reset page on refresh
     } catch (err: any) {
       console.error("Error fetching analytics data:", err);
       setErrorMsg("Failed to load analytics records.");
@@ -87,6 +92,11 @@ export default function AnalyticsPage({ eventTypeId, showTitle = true }: Analyti
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Reset page when dateRange filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [dateRange, filterPaidOnly]);
 
   // Filter bookings based on Event Type and Date Range selection
   const filteredBookings = bookings.filter((b) => {
@@ -199,6 +209,11 @@ export default function AnalyticsPage({ eventTypeId, showTitle = true }: Analyti
     return true;
   });
 
+  // Paginated bookings
+  const totalPages = Math.max(Math.ceil(tableBookings.length / itemsPerPage), 1);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedBookings = tableBookings.slice(startIndex, startIndex + itemsPerPage);
+
   if (isLoading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
@@ -279,7 +294,7 @@ export default function AnalyticsPage({ eventTypeId, showTitle = true }: Analyti
             </div>
           </div>
           <div className="mt-2">
-            <h2 className="text-3xl font-extrabold text-[#171614] font-cal-sans">{totalBookings}</h2>
+            <h2 className="text-2xl font-extrabold text-[#171614] font-cal-sans">{totalBookings}</h2>
             <div className="flex items-center gap-1.5 mt-1 text-[10px] font-bold text-emerald-600">
               <TrendingUp className="w-3 h-3" />
               <span>Active Scheduled Meetings</span>
@@ -304,7 +319,7 @@ export default function AnalyticsPage({ eventTypeId, showTitle = true }: Analyti
                   </h2>
                 ))
               ) : (
-                <h2 className="text-3xl font-extrabold text-[#171614] font-cal-sans">0.00</h2>
+                <h2 className="text-2xl font-extrabold text-[#171614] font-cal-sans">0.00</h2>
               )}
             </div>
             <div className="text-[10px] font-bold text-[#2B2A27]/55 mt-1">
@@ -322,7 +337,7 @@ export default function AnalyticsPage({ eventTypeId, showTitle = true }: Analyti
             </div>
           </div>
           <div className="mt-2">
-            <h2 className="text-3xl font-extrabold text-[#171614] font-cal-sans">
+            <h2 className="text-2xl font-extrabold text-[#171614] font-cal-sans">
               {totalBookings > 0 ? Math.round((totalPaidBookings / totalBookings) * 100) : 0}%
             </h2>
             <div className="text-[10px] font-bold text-[#2B2A27]/55 mt-1">
@@ -331,26 +346,18 @@ export default function AnalyticsPage({ eventTypeId, showTitle = true }: Analyti
           </div>
         </div>
 
-        {/* Unresolved Bookings Status */}
+        {/* Confirmed Bookings Status */}
         <div className="bg-white border border-[#E4E1D4] rounded-2xl p-5 shadow-[2px_2px_0_rgba(23,22,20,0.04)] hover:shadow-[4px_4px_0_rgba(23,22,20,0.08)] hover:-translate-y-0.5 transition-all flex flex-col justify-between h-36">
           <div className="flex justify-between items-start">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#2B2A27]/55">Meeting Statuses</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#2B2A27]/55">Confirmed Slots</span>
             <div className="p-1.5 bg-blue-50/50 border border-blue-100 rounded-lg">
               <Activity className="w-4 h-4 text-blue-600" />
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-1 text-center mt-2">
-            <div>
-              <span className="block text-lg font-black text-emerald-600 font-cal-sans">{confirmedBookings}</span>
-              <span className="text-[8px] font-extrabold text-[#2B2A27]/40 uppercase tracking-wide">Confirmed</span>
-            </div>
-            <div>
-              <span className="block text-lg font-black text-amber-600 font-cal-sans">{pendingPayments}</span>
-              <span className="text-[8px] font-extrabold text-[#2B2A27]/40 uppercase tracking-wide">Pending</span>
-            </div>
-            <div>
-              <span className="block text-lg font-black text-red-500 font-cal-sans">{cancelledBookings}</span>
-              <span className="text-[8px] font-extrabold text-[#2B2A27]/40 uppercase tracking-wide">Cancelled</span>
+          <div className="mt-2">
+            <h2 className="text-2xl font-extrabold text-[#171614] font-cal-sans">{confirmedBookings}</h2>
+            <div className="text-[10px] font-bold text-[#2B2A27]/55 mt-1">
+              {pendingPayments} pending, {cancelledBookings} cancelled
             </div>
           </div>
         </div>
@@ -484,78 +491,103 @@ export default function AnalyticsPage({ eventTypeId, showTitle = true }: Analyti
         {/* Table */}
         <div className="overflow-x-auto">
           {tableBookings.length > 0 ? (
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-[#E4E1D4] text-[10px] font-bold uppercase tracking-wider text-[#2B2A27]/60 bg-gray-50/30">
-                  <th className="py-3.5 px-6">Attendee</th>
-                  <th className="py-3.5 px-6">Scheduled Date</th>
-                  <th className="py-3.5 px-6">Meeting Type</th>
-                  <th className="py-3.5 px-6 text-center">Status</th>
-                  <th className="py-3.5 px-6 text-right">Payment/Price</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#E4E1D4]/50">
-                {tableBookings.map((b) => {
-                  const hasPayment = b.eventType?.paymentEnabled && b.eventType?.price > 0;
-                  const formattedDate = new Date(b.startTime).toLocaleDateString("en-US", {
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  });
-                  const formattedTime = new Date(b.startTime).toLocaleTimeString("en-US", {
-                    hour: "numeric",
-                    minute: "2-digit",
-                  });
+            <>
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-[#E4E1D4] text-xs font-bold uppercase tracking-wider text-[#2B2A27]/60 bg-gray-50/30">
+                    <th className="py-3.5 px-6">Attendee</th>
+                    <th className="py-3.5 px-6">Scheduled Date</th>
+                    <th className="py-3.5 px-6">Meeting Type</th>
+                    <th className="py-3.5 px-6 text-center">Status</th>
+                    <th className="py-3.5 px-6 text-right">Payment/Price</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#E4E1D4]/50">
+                  {paginatedBookings.map((b) => {
+                    const hasPayment = b.eventType?.paymentEnabled && b.eventType?.price > 0;
+                    const formattedDate = new Date(b.startTime).toLocaleDateString("en-US", {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    });
+                    const formattedTime = new Date(b.startTime).toLocaleTimeString("en-US", {
+                      hour: "numeric",
+                      minute: "2-digit",
+                    });
 
-                  return (
-                    <tr key={b.id} className="hover:bg-[#FDFBF2]/20 transition-all text-xs font-semibold text-[#171614]">
-                      {/* Attendee */}
-                      <td className="py-4.5 px-6">
-                        <div className="font-bold text-[#171614]">{b.attendeeName}</div>
-                        <div className="text-[10px] text-[#2B2A27]/50 mt-0.5">{b.attendeeEmail}</div>
-                      </td>
+                    return (
+                      <tr key={b.id} className="hover:bg-[#FDFBF2]/20 transition-all text-xs font-semibold text-[#171614]">
+                        {/* Attendee */}
+                        <td className="py-4.5 px-6">
+                          <div className="font-bold text-[#171614]">{b.attendeeName}</div>
+                          <div className="text-[10px] text-[#2B2A27]/50 mt-0.5">{b.attendeeEmail}</div>
+                        </td>
 
-                      {/* Scheduled Date */}
-                      <td className="py-4.5 px-6">
-                        <div>{formattedDate}</div>
-                        <div className="text-[10px] text-[#2B2A27]/50 mt-0.5">{formattedTime}</div>
-                      </td>
+                        {/* Scheduled Date */}
+                        <td className="py-4.5 px-6">
+                          <div>{formattedDate}</div>
+                          <div className="text-[10px] text-[#2B2A27]/50 mt-0.5">{formattedTime}</div>
+                        </td>
 
-                      {/* Meeting Type */}
-                      <td className="py-4.5 px-6 font-bold uppercase text-[10px] tracking-wide">
-                        {b.eventType?.title || "Custom Meeting"}
-                      </td>
+                        {/* Meeting Type */}
+                        <td className="py-4.5 px-6 font-bold uppercase text-[10px] tracking-wide">
+                          {b.eventType?.title || "Custom Meeting"}
+                        </td>
 
-                      {/* Status */}
-                      <td className="py-4.5 px-6 text-center">
-                        <span 
-                          className={clsx(
-                            "inline-block px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wide border",
-                            b.status === "confirmed" && "bg-emerald-50 text-emerald-700 border-emerald-250",
-                            b.status === "cancelled" && "bg-red-50 text-red-600 border-red-200",
-                            b.status === "pending_payment" && "bg-amber-50 text-amber-600 border-amber-250"
-                          )}
-                        >
-                          {b.status === "pending_payment" ? "Pending Payment" : b.status}
-                        </span>
-                      </td>
-
-                      {/* Payment/Price */}
-                      <td className="py-4.5 px-6 text-right font-cal-sans text-sm font-bold">
-                        {hasPayment ? (
-                          <span className={clsx(b.status === "confirmed" ? "text-emerald-700" : "text-amber-600")}>
-                            {CURRENCY_SYMBOLS[b.eventType.currency] || b.eventType.currency} {b.eventType.price.toFixed(2)}
+                        {/* Status */}
+                        <td className="py-4.5 px-6 text-center">
+                          <span 
+                            className={clsx(
+                              "inline-block px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wide border",
+                              b.status === "confirmed" && "bg-emerald-50 text-emerald-700 border-emerald-250",
+                              b.status === "cancelled" && "bg-red-50 text-red-600 border-red-200",
+                              b.status === "pending_payment" && "bg-amber-50 text-amber-600 border-amber-250"
+                            )}
+                          >
+                            {b.status === "pending_payment" ? "Pending Payment" : b.status}
                           </span>
-                        ) : (
-                          <span className="text-[#2B2A27]/40 text-xs uppercase font-sans font-bold">Free</span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        </td>
+
+                        {/* Payment/Price */}
+                        <td className="py-4.5 px-6 text-right font-cal-sans text-sm font-bold">
+                          {hasPayment ? (
+                            <span className={clsx(b.status === "confirmed" ? "text-emerald-700" : "text-amber-600")}>
+                              {CURRENCY_SYMBOLS[b.eventType.currency] || b.eventType.currency} {b.eventType.price.toFixed(2)}
+                            </span>
+                          ) : (
+                            <span className="text-[#2B2A27]/40 text-xs uppercase font-sans font-bold">Free</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+
+              {/* Table Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex justify-between items-center px-6 py-3.5 bg-gray-50/50 border-t border-[#E4E1D4] text-xs font-bold text-[#2B2A27] select-none">
+                  <button
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    className="px-3 py-1.5 border border-[#E4E1D4] hover:border-[#171614] rounded-xl bg-white hover:bg-[#FDFBF2] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-[#E4E1D4] disabled:hover:bg-white active:scale-95 disabled:active:scale-100 transition-all text-[#171614] cursor-pointer"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-[#2B2A27]/70 font-semibold">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    className="px-3 py-1.5 border border-[#E4E1D4] hover:border-[#171614] rounded-xl bg-white hover:bg-[#FDFBF2] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-[#E4E1D4] disabled:hover:bg-white active:scale-95 disabled:active:scale-100 transition-all text-[#171614] cursor-pointer"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </>
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-center space-y-3">
               <Calendar className="w-10 h-10 text-[#2B2A27]/30" />

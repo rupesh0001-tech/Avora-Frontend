@@ -326,7 +326,7 @@ export function EventEditPage() {
   ];
 
   return (
-    <div className={clsx('min-h-screen', 'bg-[#FDFBF2]', 'flex', 'flex-col')}>
+    <div className={clsx('h-screen', 'bg-[#FDFBF2]', 'flex', 'flex-col')}>
       {/* Edit Header */}
       <header className={clsx('h-16', 'px-8', 'flex', 'items-center', 'justify-between', 'border-b', 'border-[#E4E1D4]', 'bg-white')}>
         <div className={clsx('flex', 'items-center', 'gap-4')}>
