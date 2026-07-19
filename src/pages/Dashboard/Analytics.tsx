@@ -223,7 +223,7 @@ export default function AnalyticsPage({ eventTypeId, showTitle = true }: Analyti
   }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto p-1 font-sans">
+    <div className="space-y-6 max-w-7xl mx-auto p-1 font-sans no-scrollbar">
       {/* Top Banner Row */}
       {showTitle ? (
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-[#E4E1D4] pb-5">

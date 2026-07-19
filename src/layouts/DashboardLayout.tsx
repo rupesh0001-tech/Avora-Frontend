@@ -5,6 +5,7 @@ import { Sidebar } from "../components/layout/Sidebar";
 import { Header } from "../components/layout/Header";
 import { CreateEventModal } from "../pages/Dashboard/components/CreateEventModal";
 import { useApi } from "../lib/api";
+import clsx from "clsx";
 
 export function DashboardLayout() {
   const { isSignedIn, isLoaded } = useAuth();
@@ -75,7 +76,7 @@ export function DashboardLayout() {
           onCreateClick={() => setIsCreateModalOpen(true)}
         />
         
-        <main className="flex-1 overflow-y-auto p-8">
+        <main className={clsx("flex-1 overflow-y-auto p-8", location.pathname === "/dashboard/analytics" && "no-scrollbar")}>
           <Outlet context={{ searchQuery, setSearchQuery }} />
         </main>
       </div>

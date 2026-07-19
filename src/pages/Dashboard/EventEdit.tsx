@@ -395,7 +395,7 @@ export function EventEditPage() {
         </aside>
 
         {/* Right workspace panels */}
-        <main className={clsx('flex-1', 'p-8', 'overflow-y-auto', 'max-w-4xl', 'mx-auto')}>
+        <main className={clsx('flex-1', 'p-8', 'overflow-y-auto', 'max-w-4xl', 'mx-auto', activeTab === "analytics" && "no-scrollbar")}>
           
           {/* BASICS PANEL */}
           {activeTab === "basics" && (
