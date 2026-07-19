@@ -1,8 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { Save, ChevronDown } from "lucide-react";
+import { Save, ChevronDown, Globe } from "lucide-react";
 import { useApi } from "../../lib/api";
 import { Button } from "../../components/ui/Button";
 import clsx from "clsx";
+
+const TIMEZONE_OPTIONS = [
+  { value: "UTC", label: "UTC (GMT+0)" },
+  { value: "Asia/Kolkata", label: "Kolkata (GMT+5:30)" },
+  { value: "America/New_York", label: "New York (GMT-4)" },
+  { value: "America/Los_Angeles", label: "Los Angeles (GMT-7)" },
+  { value: "America/Chicago", label: "Chicago (GMT-5)" },
+  { value: "America/Denver", label: "Denver (GMT-6)" },
+  { value: "Europe/London", label: "London (GMT+1)" },
+  { value: "Europe/Paris", label: "Paris (GMT+2)" },
+  { value: "Europe/Berlin", label: "Berlin (GMT+2)" },
+  { value: "Asia/Tokyo", label: "Tokyo (GMT+9)" },
+  { value: "Asia/Singapore", label: "Singapore (GMT+8)" },
+  { value: "Asia/Dubai", label: "Dubai (GMT+4)" },
+  { value: "Australia/Sydney", label: "Sydney (GMT+10)" },
+];
 
 interface TimeSlot {
   startTime: string;
@@ -36,6 +52,7 @@ const TIME_OPTIONS = (() => {
 export default function AvailabilityPage() {
   const api = useApi();
   const [availability, setAvailability] = useState<DayConfig[]>([]);
+  const [timezone, setTimezone] = useState("UTC");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -53,6 +70,7 @@ export default function AvailabilityPage() {
       setMessage(null);
       const res = await api.get("/users/availability");
       setAvailability(res.data.availability || []);
+      if (res.data.timezone) setTimezone(res.data.timezone);
     } catch (err: any) {
       console.error("Error loading availability:", err);
       setMessage({ type: "error", text: "Failed to load availability schedule." });
@@ -93,7 +111,7 @@ export default function AvailabilityPage() {
     setMessage(null);
 
     try {
-      await api.put("/users/availability", { availability });
+      await api.put("/users/availability", { availability, timezone });
       setMessage({ type: "success", text: "Availability schedule saved successfully! ✓" });
       setTimeout(() => setMessage(null), 3000);
     } catch (err: any) {
@@ -123,6 +141,21 @@ export default function AvailabilityPage() {
           <p className="text-xs font-semibold text-[#2B2A27]/60 mt-1">
             Configure your default working hours. New event types will automatically copy this schedule.
           </p>
+
+          {/* Timezone Selector */}
+          <div className="flex items-center gap-2 mt-3 text-xs font-semibold text-[#2B2A27]/70">
+            <Globe className="w-3.5 h-3.5 flex-shrink-0" />
+            <span>Timezone:</span>
+            <select
+              value={timezone}
+              onChange={(e) => setTimezone(e.target.value)}
+              className="bg-white border border-[#E4E1D4] rounded-lg px-2 py-1 text-xs font-semibold text-[#171614] focus:outline-none focus:border-[#171614] cursor-pointer"
+            >
+              {TIMEZONE_OPTIONS.map((tz) => (
+                <option key={tz.value} value={tz.value}>{tz.label}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {message && (

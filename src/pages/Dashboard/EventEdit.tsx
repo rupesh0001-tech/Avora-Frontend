@@ -11,6 +11,8 @@ import { AvailabilityTab } from "./components/EventEdit/AvailabilityTab";
 import { BookingFormTab } from "./components/EventEdit/BookingFormTab";
 import { AppearanceTab } from "./components/EventEdit/AppearanceTab";
 import { BookingsTab } from "./components/EventEdit/BookingsTab";
+import { PaymentsTab } from "./components/EventEdit/PaymentsTab";
+import { LimitsTab } from "./components/EventEdit/LimitsTab";
 
 interface EventType {
   id: string;
@@ -86,6 +88,26 @@ export function EventEditPage() {
   // Appearance State
   const [appearance, setAppearance] = useState("classic");
 
+  // Payments & Seats State
+  const [paymentEnabled, setPaymentEnabled] = useState(false);
+  const [price, setPrice] = useState(0);
+  const [currency, setCurrency] = useState("INR");
+  const [seatsEnabled, setSeatsEnabled] = useState(false);
+  const [seatsMax, setSeatsMax] = useState(1);
+  const [seatsShareInfo, setSeatsShareInfo] = useState(false);
+  const [seatsShowCount, setSeatsShowCount] = useState(false);
+
+  // Limits & Buffers State
+  const [beforeBuffer, setBeforeBuffer] = useState(0);
+  const [afterBuffer, setAfterBuffer] = useState(0);
+  const [minimumNotice, setMinimumNotice] = useState(120);
+  const [slotInterval, setSlotInterval] = useState<number | null>(null);
+  const [limitBookingFrequency, setLimitBookingFrequency] = useState<any>(null);
+  const [limitTotalBookingDuration, setLimitTotalBookingDuration] = useState<any>(null);
+  const [limitFutureBookings, setLimitFutureBookings] = useState<any>(null);
+  const [limitUpcomingBookings, setLimitUpcomingBookings] = useState<any>(null);
+  const [showOnlyFirstAvailableSlot, setShowOnlyFirstAvailableSlot] = useState(false);
+
   useEffect(() => {
     async function loadData() {
       try {
@@ -108,6 +130,25 @@ export function EventEditPage() {
         setAvailability(ev.availability || []);
         setBookingFields(ev.bookingFields || []);
         setAppearance(ev.appearance || "classic");
+
+        // Populate new fields
+        setPaymentEnabled(ev.paymentEnabled || false);
+        setPrice(ev.price || 0);
+        setCurrency(ev.currency || "INR");
+        setSeatsEnabled(ev.seatsEnabled || false);
+        setSeatsMax(ev.seatsMax || 1);
+        setSeatsShareInfo(ev.seatsShareInfo || false);
+        setSeatsShowCount(ev.seatsShowCount || false);
+
+        setBeforeBuffer(ev.beforeBuffer || 0);
+        setAfterBuffer(ev.afterBuffer || 0);
+        setMinimumNotice(ev.minimumNotice || 120);
+        setSlotInterval(ev.slotInterval);
+        setLimitBookingFrequency(ev.limitBookingFrequency);
+        setLimitTotalBookingDuration(ev.limitTotalBookingDuration);
+        setLimitFutureBookings(ev.limitFutureBookings);
+        setLimitUpcomingBookings(ev.limitUpcomingBookings);
+        setShowOnlyFirstAvailableSlot(ev.showOnlyFirstAvailableSlot || false);
       } catch (err: any) {
         console.error("Error loading event edit page data:", err);
         setMessage({ type: "error", text: "Failed to load event type details." });
@@ -148,6 +189,32 @@ export function EventEditPage() {
   const handleSaveAppearance = async (selectedLayout: string) => {
     setAppearance(selectedLayout);
     await handleUpdate({ appearance: selectedLayout });
+  };
+
+  const handleSavePayments = async () => {
+    await handleUpdate({
+      paymentEnabled,
+      price: Number(price),
+      currency,
+      seatsEnabled,
+      seatsMax: Number(seatsMax),
+      seatsShareInfo,
+      seatsShowCount,
+    });
+  };
+
+  const handleSaveLimits = async () => {
+    await handleUpdate({
+      beforeBuffer: Number(beforeBuffer),
+      afterBuffer: Number(afterBuffer),
+      minimumNotice: Number(minimumNotice),
+      slotInterval: slotInterval === null ? null : Number(slotInterval),
+      limitBookingFrequency,
+      limitTotalBookingDuration,
+      limitFutureBookings,
+      limitUpcomingBookings,
+      showOnlyFirstAvailableSlot,
+    });
   };
 
   const handleUpdate = async (updatedFields: Partial<EventType>) => {
@@ -250,8 +317,8 @@ export function EventEditPage() {
     { id: "bookingForm", name: "Booking Form", icon: MessageSquare },
     { id: "appearance", name: "Appearance", icon: Sparkles },
     { id: "bookings", name: "View Bookings", icon: Calendar },
-    { id: "payments", name: "Payment & Seats", icon: Shield, comingSoon: true },
-    { id: "limits", name: "Limits & Buffers", icon: Clock, comingSoon: true },
+    { id: "payments", name: "Payment & Seats", icon: Shield },
+    { id: "limits", name: "Limits & Buffers", icon: Clock },
     { id: "reschedule", name: "Reschedule & Cancel", icon: Clock, comingSoon: true },
     { id: "webhooks", name: "Webhooks", icon: HelpCircle, comingSoon: true },
   ];
@@ -401,8 +468,56 @@ export function EventEditPage() {
             <BookingsTab eventTypeId={event.id} />
           )}
 
+          {/* PAYMENTS PANEL */}
+          {activeTab === "payments" && (
+            <PaymentsTab
+              paymentEnabled={paymentEnabled}
+              setPaymentEnabled={setPaymentEnabled}
+              price={price}
+              setPrice={setPrice}
+              currency={currency}
+              setCurrency={setCurrency}
+              seatsEnabled={seatsEnabled}
+              setSeatsEnabled={setSeatsEnabled}
+              seatsMax={seatsMax}
+              setSeatsMax={setSeatsMax}
+              seatsShareInfo={seatsShareInfo}
+              setSeatsShareInfo={setSeatsShareInfo}
+              seatsShowCount={seatsShowCount}
+              setSeatsShowCount={setSeatsShowCount}
+              isSaving={isSaving}
+              onSave={handleSavePayments}
+            />
+          )}
+
+          {/* LIMITS PANEL */}
+          {activeTab === "limits" && (
+            <LimitsTab
+              beforeBuffer={beforeBuffer}
+              setBeforeBuffer={setBeforeBuffer}
+              afterBuffer={afterBuffer}
+              setAfterBuffer={setAfterBuffer}
+              minimumNotice={minimumNotice}
+              setMinimumNotice={setMinimumNotice}
+              slotInterval={slotInterval}
+              setSlotInterval={setSlotInterval}
+              limitBookingFrequency={limitBookingFrequency}
+              setLimitBookingFrequency={setLimitBookingFrequency}
+              limitTotalBookingDuration={limitTotalBookingDuration}
+              setLimitTotalBookingDuration={setLimitTotalBookingDuration}
+              limitFutureBookings={limitFutureBookings}
+              setLimitFutureBookings={setLimitFutureBookings}
+              limitUpcomingBookings={limitUpcomingBookings}
+              setLimitUpcomingBookings={setLimitUpcomingBookings}
+              showOnlyFirstAvailableSlot={showOnlyFirstAvailableSlot}
+              setShowOnlyFirstAvailableSlot={setShowOnlyFirstAvailableSlot}
+              isSaving={isSaving}
+              onSave={handleSaveLimits}
+            />
+          )}
+
           {/* DUMMY/COMING SOON PANELS */}
-          {["payments", "limits", "reschedule", "webhooks"].includes(activeTab) && (
+          {["reschedule", "webhooks"].includes(activeTab) && (
             <div className={clsx('bg-white', 'border', 'border-[#E4E1D4]', 'rounded-2xl', 'p-12', 'text-center', 'shadow-[3px_3px_0_rgba(23,22,20,0.08)]', 'space-y-4')}>
               <Sparkles className={clsx('w-12', 'h-12', 'text-[#171614]', 'mx-auto', 'opacity-75')} />
               <h3 className={clsx('font-cal-sans', 'text-xl', 'font-bold', 'uppercase', 'tracking-wider', 'text-[#171614]')}>Coming Soon!</h3>

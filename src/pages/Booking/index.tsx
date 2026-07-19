@@ -30,6 +30,32 @@ interface BookedSlot {
   endTime: string;
 }
 
+const TIMEZONES = [
+  { value: "UTC", label: "UTC (GMT+0)" },
+  { value: "Asia/Kolkata", label: "Kolkata (GMT+5:30)" },
+  { value: "America/New_York", label: "New York (GMT-4)" },
+  { value: "America/Los_Angeles", label: "Los Angeles (GMT-7)" },
+  { value: "America/Chicago", label: "Chicago (GMT-5)" },
+  { value: "America/Denver", label: "Denver (GMT-6)" },
+  { value: "Europe/London", label: "London (GMT+1)" },
+  { value: "Europe/Paris", label: "Paris (GMT+2)" },
+  { value: "Europe/Berlin", label: "Berlin (GMT+2)" },
+  { value: "Asia/Tokyo", label: "Tokyo (GMT+9)" },
+  { value: "Asia/Singapore", label: "Singapore (GMT+8)" },
+  { value: "Asia/Dubai", label: "Dubai (GMT+4)" },
+  { value: "Australia/Sydney", label: "Sydney (GMT+10)" },
+];
+
+/** Build a "YYYY-MM-DD" string using LOCAL date components, not UTC.
+ *  This prevents midnight IST (e.g. July 24 00:00 IST = July 23 18:30 UTC)
+ *  from rolling back to the previous day when serialised via toISOString(). */
+const localDateStr = (d: Date): string => {
+  const y = d.getFullYear();
+  const mo = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${mo}-${day}`;
+};
+
 export default function BookingPage() {
   const { username, slug } = useParams<{ username: string; slug: string }>();
   const navigate = useNavigate();
@@ -60,9 +86,27 @@ export default function BookingPage() {
   const [attendeeEmail, setAttendeeEmail] = useState("");
   const [attendeePhone, setAttendeePhone] = useState("");
   const [customFieldsData, setCustomFieldsData] = useState<Record<string, string>>({});
+  const [attendeeTimezone, setAttendeeTimezone] = useState(() => {
+    try {
+      return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+    } catch (e) {
+      return "UTC";
+    }
+  });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successBooking, setSuccessBooking] = useState<any>(null);
+
+  // Load Razorpay Script dynamically on mount
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    document.body.appendChild(script);
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   // Load public event details
   useEffect(() => {
@@ -129,7 +173,9 @@ export default function BookingPage() {
   useEffect(() => {
     if (eventType) {
       if (stepParam === "2" && dateParam && timeParam) {
-        const parsedDate = new Date(dateParam);
+        // Parse "YYYY-MM-DD" as LOCAL midnight so July 24 stays July 24
+        const [yr, mo, dy] = dateParam.split("-").map(Number);
+        const parsedDate = new Date(yr, (mo ?? 1) - 1, dy ?? 1);
         setSelectedDate(parsedDate);
         setCurrentMonth(parsedDate);
         setSelectedTime(timeParam);
@@ -157,7 +203,7 @@ export default function BookingPage() {
         if (!searchParams.get("step")) {
           const params: Record<string, string> = { step: "1" };
           if (selectedDate) {
-            params.date = selectedDate.toISOString().split("T")[0];
+            params.date = localDateStr(selectedDate);
           }
           setSearchParams(params);
         }
@@ -170,7 +216,7 @@ export default function BookingPage() {
     async function loadBookedSlots() {
       if (!username || !slug || !selectedDate) return;
       try {
-        const dateStr = selectedDate.toISOString().split("T")[0];
+        const dateStr = localDateStr(selectedDate);
         const res = await axios.get(`http://localhost:5001/api/bookings/public/${username}/${slug}?date=${dateStr}`);
         setBookedSlots(res.data.bookedSlots || []);
       } catch (err) {
@@ -184,7 +230,7 @@ export default function BookingPage() {
   const handleSelectDateTime = (date: Date, time: string) => {
     setSelectedDate(date);
     setSelectedTime(time);
-    const dateStr = date.toISOString().split("T")[0];
+    const dateStr = localDateStr(date);
     setSearchParams({ step: "2", date: dateStr, time });
     setStep("form");
   };
@@ -193,7 +239,7 @@ export default function BookingPage() {
     setSelectedTime(null);
     const params: Record<string, string> = { step: "1" };
     if (selectedDate) {
-      params.date = selectedDate.toISOString().split("T")[0];
+      params.date = localDateStr(selectedDate);
     }
     setSearchParams(params);
     setStep("dateTime");
@@ -250,6 +296,15 @@ export default function BookingPage() {
     const checkDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), dayNum);
     if (checkDate < today) return false;
 
+    // Check limitFutureBookings if enabled
+    if (eventType?.limitFutureBookings) {
+      const config = eventType.limitFutureBookings as any;
+      if (config.enabled && config.days) {
+        const maxFutureDate = new Date(today.getTime() + config.days * 24 * 60 * 60 * 1000);
+        if (checkDate > maxFutureDate) return false;
+      }
+    }
+
     const weekdayName = checkDate.toLocaleDateString("en-US", { weekday: "long" });
     const dayConfig = eventType.availability?.find((a) => a.day === weekdayName);
     
@@ -257,6 +312,30 @@ export default function BookingPage() {
   };
 
   // --- TIME SLOT GENERATION ---
+  // Helper: given a "HH:MM" slot string and a local date, build a UTC timestamp
+  // treating the slot time as being in the chosen attendeeTimezone.
+  const slotToUTC = (localDateStr: string, slotTimeStr: string, tz: string): number => {
+    try {
+      // Build a fake ISO string and parse it as if it were in tz
+      const fakeISO = `${localDateStr}T${slotTimeStr}:00`;
+      // Intl lets us find the offset by formatting a known UTC time and comparing
+      const testDate = new Date(fakeISO + "Z"); // treat as UTC first
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: tz,
+        year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", second: "2-digit",
+        hour12: false,
+      }).formatToParts(testDate);
+      const p = (key: string) => parts.find((x) => x.type === key)?.value ?? "00";
+      const tzDate = new Date(`${p("year")}-${p("month")}-${p("day")}T${p("hour").padStart(2,"0")}:${p("minute")}:${p("second")}Z`);
+      const offsetMs = tzDate.getTime() - testDate.getTime();
+      // The actual UTC ms for when slotTimeStr occurs in tz on localDateStr
+      return new Date(`${localDateStr}T${slotTimeStr}:00Z`).getTime() - offsetMs;
+    } catch {
+      return new Date(`${localDateStr}T${slotTimeStr}:00Z`).getTime();
+    }
+  };
+
   const generateAvailableTimeSlots = () => {
     if (!selectedDate) return [];
 
@@ -266,29 +345,82 @@ export default function BookingPage() {
     if (!dayConfig || !dayConfig.enabled || !dayConfig.slots) return [];
 
     const slots: string[] = [];
-    const dateStr = selectedDate.toISOString().split("T")[0];
+
+    // Use LOCAL date components so July 20 IST stays "2026-07-20" not "2026-07-19"
+    const y = selectedDate.getFullYear();
+    const mo = String(selectedDate.getMonth() + 1).padStart(2, "0");
+    const d = String(selectedDate.getDate()).padStart(2, "0");
+    const dateStr = `${y}-${mo}-${d}`;
+
+    // isToday: compare local date parts (not UTC-converted ISO strings)
+    const now = new Date();
+    const isToday =
+      selectedDate.getFullYear() === now.getFullYear() &&
+      selectedDate.getMonth() === now.getMonth() &&
+      selectedDate.getDate() === now.getDate();
+
+    // Check notice period buffer
+    const noticeMinutes = eventType.minimumNotice ?? 120;
+    const minTimeWindow = Date.now() + noticeMinutes * 60 * 1000;
+
+    const beforeBuffer = eventType.beforeBuffer ?? 0;
+    const afterBuffer = eventType.afterBuffer ?? 0;
 
     dayConfig.slots.forEach((range) => {
       let currentMinutes = timeToMinutes(range.startTime);
       const endMinutes = timeToMinutes(range.endTime);
 
+      const step = eventType.slotInterval && eventType.slotInterval > 0 
+        ? eventType.slotInterval 
+        : eventType.duration;
+
       while (currentMinutes + eventType.duration <= endMinutes) {
         const slotTimeStr = minutesToTime(currentMinutes);
-        
-        const isBusy = bookedSlots.some((booked) => {
-          const bStart = new Date(booked.startTime).getTime();
-          const bEnd = new Date(booked.endTime).getTime();
-          const sStart = new Date(`${dateStr}T${slotTimeStr}:00Z`).getTime();
-          const sEnd = sStart + eventType.duration * 60 * 1000;
 
-          return (sStart >= bStart && sStart < bEnd) || (sEnd > bStart && sEnd <= bEnd);
-        });
+        // Interpret slot time in the attendee's selected timezone
+        const sStart = slotToUTC(dateStr, slotTimeStr, attendeeTimezone);
+
+        // Only skip past slots or those violating minimum notice
+        if (sStart < minTimeWindow) {
+          currentMinutes += step;
+          continue;
+        }
+
+        let isBusy = false;
+        
+        if (eventType.seatsEnabled) {
+          // Count bookings sharing exact start time
+          const count = bookedSlots.filter(
+            (b) => new Date(b.startTime).getTime() === sStart
+          ).length;
+          if (count >= (eventType.seatsMax ?? 1)) {
+            isBusy = true;
+          }
+        } else {
+          // Standard overlap check with buffers
+          isBusy = bookedSlots.some((booked) => {
+            const bStart = new Date(booked.startTime).getTime();
+            const bEnd = new Date(booked.endTime).getTime();
+            
+            const combinedAfterBuffer = afterBuffer * 60 * 1000;
+            const combinedBeforeBuffer = beforeBuffer * 60 * 1000;
+
+            return (
+              sStart < bEnd + combinedAfterBuffer &&
+              (sStart + eventType.duration * 60 * 1000) > bStart - combinedBeforeBuffer
+            );
+          });
+        }
 
         if (!isBusy) {
+          // If showOnlyFirstAvailableSlot is enabled, only take the first slot of the day
+          if (eventType.showOnlyFirstAvailableSlot && slots.length > 0) {
+            break;
+          }
           slots.push(slotTimeStr);
         }
         
-        currentMinutes += eventType.duration;
+        currentMinutes += step;
       }
     });
 
@@ -307,10 +439,16 @@ export default function BookingPage() {
   };
 
   const formatTimeSlotLabel = (timeStr: string) => {
-    const [h, m] = timeStr.split(":").map(Number);
-    const ampm = h >= 12 ? "PM" : "AM";
-    const hr = h % 12 === 0 ? 12 : h % 12;
-    return `${hr}:${m.toString().padStart(2, "0")} ${ampm}`;
+    // The slot time string (e.g. "09:00") represents a time in the attendee's timezone.
+    // Just display it directly as 12-hour format — no UTC conversion needed.
+    try {
+      const [h, m] = timeStr.split(":").map(Number);
+      const ampm = h >= 12 ? "PM" : "AM";
+      const hr = h % 12 === 0 ? 12 : h % 12;
+      return `${hr}:${m.toString().padStart(2, "0")} ${ampm}`;
+    } catch {
+      return timeStr;
+    }
   };
 
   // --- APPEARANCE THEMES DESIGN SYSTEM ---
@@ -420,6 +558,20 @@ export default function BookingPage() {
     }
   };
 
+
+
+  const getRemainingSeatsForSlot = (slotTimeStr: string) => {
+    if (!eventType?.seatsEnabled || !selectedDate) return null;
+    const y = selectedDate.getFullYear();
+    const mo = String(selectedDate.getMonth() + 1).padStart(2, "0");
+    const d = String(selectedDate.getDate()).padStart(2, "0");
+    const dateStr = `${y}-${mo}-${d}`;
+
+    const sStart = slotToUTC(dateStr, slotTimeStr, attendeeTimezone);
+    const taken = bookedSlots.filter((b) => new Date(b.startTime).getTime() === sStart).length;
+    return Math.max(0, (eventType.seatsMax || 1) - taken);
+  };
+
   const theme = getThemeStyles();
   const availableSlots = generateAvailableTimeSlots();
 
@@ -431,7 +583,10 @@ export default function BookingPage() {
     setIsSubmitting(true);
     setErrorMsg("");
 
-    const dateStr = selectedDate.toISOString().split("T")[0];
+    const y = selectedDate.getFullYear();
+    const mo = String(selectedDate.getMonth() + 1).padStart(2, "0");
+    const d = String(selectedDate.getDate()).padStart(2, "0");
+    const dateStr = `${y}-${mo}-${d}`;
     const ISOstartTime = new Date(`${dateStr}T${selectedTime}:00Z`).toISOString();
 
     try {
@@ -441,22 +596,72 @@ export default function BookingPage() {
         attendeeName,
         attendeeEmail,
         attendeePhone: attendeePhone || undefined,
-        bookingFieldsData: customFieldsData,
+        bookingFieldsData: {
+          ...customFieldsData,
+          timezone: attendeeTimezone,
+        },
       });
 
-      // Clear local storage on success
+      // Clear local storage
       localStorage.removeItem("cally_attendeeName");
       localStorage.removeItem("cally_attendeeEmail");
       localStorage.removeItem("cally_attendeePhone");
       localStorage.removeItem("cally_customFieldsData");
 
-      setSuccessBooking(res.data.booking);
-      setSearchParams({ step: "3" });
-      setStep("success");
+      // Paid Booking handler
+      if (res.data.razorpayOrder) {
+        const orderData = res.data.razorpayOrder;
+        const options = {
+          key: orderData.key,
+          amount: orderData.amount,
+          currency: orderData.currency,
+          name: "Avora Pay",
+          description: `Booking payment for ${eventType.title}`,
+          order_id: orderData.id,
+          handler: async (response: any) => {
+            try {
+              setIsSubmitting(true);
+              const verifyRes = await axios.post("http://localhost:5001/api/bookings/payment/verify", {
+                bookingId: res.data.booking.id,
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
+              });
+              setSuccessBooking(verifyRes.data.booking);
+              setSearchParams({ step: "3" });
+              setStep("success");
+            } catch (verifyErr: any) {
+              setErrorMsg(verifyErr.response?.data?.error || "Payment verification failed.");
+            } finally {
+              setIsSubmitting(false);
+            }
+          },
+          prefill: {
+            name: attendeeName,
+            email: attendeeEmail,
+            contact: attendeePhone || "",
+          },
+          theme: {
+            color: "#7CEFC0",
+          },
+          modal: {
+            ondismiss: () => {
+              setIsSubmitting(false);
+              setErrorMsg("Payment process was cancelled by user.");
+            },
+          },
+        };
+        const rzp = new (window as any).Razorpay(options);
+        rzp.open();
+      } else {
+        // Free booking directly transitions to success step
+        setSuccessBooking(res.data.booking);
+        setSearchParams({ step: "3" });
+        setStep("success");
+      }
     } catch (err: any) {
       console.error("Booking failed:", err);
       setErrorMsg(err.response?.data?.error || "Booking failed. Please try a different slot.");
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -510,7 +715,14 @@ export default function BookingPage() {
             </h1>
             <div className="flex items-center gap-2">
               <span className={`inline-block text-[10px] font-extrabold px-2 py-0.5 rounded-md ${theme.tagBg}`}>
-                {eventType.price > 0 ? `$${eventType.price}.00` : "Free"}
+                {eventType.price > 0 ? (
+                  `${
+                    eventType.currency === "INR" ? "₹" :
+                    eventType.currency === "USD" ? "$" :
+                    eventType.currency === "EUR" ? "€" :
+                    eventType.currency === "GBP" ? "£" : "$"
+                  }${eventType.price}`
+                ) : "Free"}
               </span>
             </div>
           </div>
@@ -543,8 +755,18 @@ export default function BookingPage() {
             )}
 
             <div className={`flex items-center gap-2.5 ${theme.textFaded}`}>
-              <Globe className="w-4.5 h-4.5 text-current opacity-70" />
-              <span>Coordinated Universal Time (UTC)</span>
+              <Globe className="w-4.5 h-4.5 text-current opacity-70 flex-shrink-0" />
+              <select
+                value={attendeeTimezone}
+                onChange={(e) => setAttendeeTimezone(e.target.value)}
+                className={`bg-transparent text-xs font-semibold focus:outline-none cursor-pointer border-b border-transparent hover:border-current py-0.5 ${theme.textMain}`}
+              >
+                {TIMEZONES.map((tz) => (
+                  <option key={tz.value} value={tz.value} className="text-black bg-white">
+                    {tz.label}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
@@ -614,8 +836,7 @@ export default function BookingPage() {
                           setSelectedDate(checkDate);
                           setSelectedTime(null);
                           // Sync param without switching step
-                          const dateStr = checkDate.toISOString().split("T")[0];
-                          setSearchParams({ step: "1", date: dateStr });
+                          setSearchParams({ step: "1", date: localDateStr(checkDate) });
                         }}
                         className={`py-2 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
                           isSelected
@@ -648,13 +869,18 @@ export default function BookingPage() {
                             <button
                               type="button"
                               onClick={() => handleSelectDateTime(selectedDate, slot)}
-                              className={`w-full py-2.5 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
+                              className={`w-full py-2.5 text-xs font-bold rounded-xl border transition-all cursor-pointer text-center flex flex-col items-center justify-center ${
                                 isTimeSelected
                                   ? theme.buttonSelected
                                   : `${theme.timeSlotBg} ${theme.borderMain} ${theme.textMain} ${theme.timeSlotHover} shadow-sm`
                               }`}
                             >
-                              {formatTimeSlotLabel(slot)}
+                              <span>{formatTimeSlotLabel(slot)}</span>
+                              {eventType.seatsEnabled && eventType.seatsShowCount && (
+                                <span className="block text-[8px] opacity-75 font-semibold mt-0.5">
+                                  {getRemainingSeatsForSlot(slot)} seats available
+                                </span>
+                              )}
                             </button>
                           </div>
                         );
@@ -795,6 +1021,25 @@ export default function BookingPage() {
                     </div>
                   );
                 })}
+
+                {/* Timezone Selection Option */}
+                <div className="space-y-1.5">
+                  <label className={`block text-xs font-bold ${theme.textMain} uppercase tracking-wider`}>
+                    Timezone <span className="text-[#E5484D]">*</span>
+                  </label>
+                  <select
+                    required
+                    value={attendeeTimezone}
+                    onChange={(e) => setAttendeeTimezone(e.target.value)}
+                    className={`w-full px-4 py-2.5 border ${theme.borderMain} rounded-xl text-xs ${theme.inputBg} font-semibold ${theme.inputText} focus:outline-none focus:border-[#B7ACF7] transition-all`}
+                  >
+                    {TIMEZONES.map((tz) => (
+                      <option key={tz.value} value={tz.value} className="text-black bg-white">
+                        {tz.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div className={`pt-4 border-t ${theme.borderSub} flex justify-end`}>
