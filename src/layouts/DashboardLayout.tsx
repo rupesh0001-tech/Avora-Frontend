@@ -53,6 +53,7 @@ export function DashboardLayout() {
     "/dashboard": "Event Types",
     "/dashboard/bookings": "Bookings",
     "/dashboard/availability": "Availability",
+    "/dashboard/calendar": "Calendar",
     "/dashboard/settings": "Settings",
   };
   

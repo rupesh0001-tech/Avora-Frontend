@@ -43,10 +43,6 @@ export default function SettingsPage() {
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
   const [checkingUsername, setCheckingUsername] = useState(false);
 
-  // Calendar Integration States
-  const [isCalendarConnected, setIsCalendarConnected] = useState(false);
-  const [isConnectingCalendar, setIsConnectingCalendar] = useState(false);
-
   useEffect(() => {
     async function loadProfile() {
       try {
@@ -63,66 +59,14 @@ export default function SettingsPage() {
           setLocale(user.locale || "en");
           setImageUrl(user.imageUrl || "");
         }
-
-        // Fetch Google calendar connection status
-        const statusRes = await api.get("/auth/google/status");
-        setIsCalendarConnected(statusRes.data.connected);
       } catch (err) {
         console.error("Error loading user profile:", err);
       } finally {
         setIsLoading(false);
       }
     }
-
-    // Check query params for calendar callbacks
-    const params = new URLSearchParams(window.location.search);
-    const googleConnected = params.get("google_connected");
-    if (googleConnected === "success") {
-      setMessage({ type: "success", text: "Successfully connected to Google Calendar! ✓" });
-      setTimeout(() => setMessage(null), 5000);
-      window.history.replaceState({}, document.title, window.location.pathname);
-    } else if (googleConnected === "error") {
-      setMessage({ type: "error", text: "Failed to connect to Google Calendar." });
-      setTimeout(() => setMessage(null), 5000);
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-
     loadProfile();
   }, []);
-
-  const handleConnectCalendar = async () => {
-    if (isConnectingCalendar) return;
-    setIsConnectingCalendar(true);
-    setMessage(null);
-    try {
-      const res = await api.get("/auth/google/connect");
-      if (res.data.url) {
-        window.location.href = res.data.url;
-      } else {
-        setMessage({ type: "error", text: "Could not generate authorization redirect link." });
-      }
-    } catch (err: any) {
-      setMessage({ type: "error", text: "Failed to connect to Google Calendar." });
-    } finally {
-      setIsConnectingCalendar(false);
-    }
-  };
-
-  const handleDisconnectCalendar = async () => {
-    if (isConnectingCalendar) return;
-    setIsConnectingCalendar(true);
-    setMessage(null);
-    try {
-      await api.delete("/auth/google/disconnect");
-      setIsCalendarConnected(false);
-      setMessage({ type: "success", text: "Google Calendar connection revoked successfully." });
-      setTimeout(() => setMessage(null), 3000);
-    } catch (err: any) {
-      setMessage({ type: "error", text: "Failed to disconnect Google Calendar." });
-    } finally {
-      setIsConnectingCalendar(false);
-    }
-  };
 
   // Username validation helper
   const checkUsernameAvailability = async (val: string) => {
@@ -366,48 +310,6 @@ export default function SettingsPage() {
               </h4>
               <p className="text-xs font-semibold text-[#2B2A27]/60 mt-0.5">{email}</p>
             </div>
-          </div>
-
-          {/* Integrations Widget */}
-          <div className="bg-white border border-[#E4E1D4] rounded-2xl p-6 shadow-[3px_3px_0_rgba(23,22,20,0.08)] space-y-4">
-            <h4 className="font-cal-sans text-xs font-bold text-[#171614] uppercase tracking-wider">
-              Calendar Integrations
-            </h4>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-red-50 border border-red-100 flex items-center justify-center text-sm font-extrabold text-red-600">
-                G
-              </div>
-              <div className="flex-1 truncate">
-                <span className="text-xs font-bold text-[#171614] block">Google Calendar</span>
-                <span className="text-[10px] font-semibold text-[#2B2A27]/50 block">
-                  {isCalendarConnected ? "Syncs bookings automatically" : "Not connected"}
-                </span>
-              </div>
-            </div>
-
-            {isCalendarConnected ? (
-              <Button
-                onClick={handleDisconnectCalendar}
-                variant="secondary"
-                size="sm"
-                rounded="xl"
-                className="w-full text-[#E5484D] hover:bg-[#E5484D]/5 border-[#E5484D]/30"
-                disabled={isConnectingCalendar}
-              >
-                Disconnect Calendar
-              </Button>
-            ) : (
-              <Button
-                onClick={handleConnectCalendar}
-                variant="primary"
-                size="sm"
-                rounded="xl"
-                className="w-full bg-[#171614] text-white"
-                disabled={isConnectingCalendar}
-              >
-                Connect Calendar
-              </Button>
-            )}
           </div>
         </div>
       </div>

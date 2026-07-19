@@ -13,6 +13,7 @@ import NotFoundPage from "../pages/NotFound";
 import BookingsPage from "../pages/Dashboard/Bookings";
 import AvailabilityPage from "../pages/Dashboard/Availability";
 import SettingsPage from "../pages/Dashboard/Settings";
+import CalendarPage from "../pages/Dashboard/Calendar";
 import OnboardingPage from "../pages/Onboarding";
 import EventEditPage from "../pages/Dashboard/EventEdit";
 import BookingPage from "../pages/Booking";
@@ -40,6 +41,7 @@ export function AppRoutes() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/dashboard/bookings" element={<BookingsPage />} />
         <Route path="/dashboard/availability" element={<AvailabilityPage />} />
+        <Route path="/dashboard/calendar" element={<CalendarPage />} />
         <Route path="/dashboard/settings" element={<SettingsPage />} />
       </Route>
 
