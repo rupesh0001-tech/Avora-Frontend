@@ -88,7 +88,7 @@ export function PaymentsTab({
                 <label className="block text-xs font-bold text-[#171614] uppercase tracking-wider">
                   Payment Gateway
                 </label>
-                <div className="flex items-center justify-between h-11 border border-[#E4E1D4] rounded-xl bg-gray-50 px-4 text-xs font-bold text-[#171614]/50 cursor-not-allowed select-none">
+                <div className="flex items-center justify-between h-11 border border-[#E4E1D4] rounded-xl bg-gray-50 px-4 text-sm font-semibold text-[#171614]/50 cursor-not-allowed select-none">
                   <span>Cal Pay (Razorpay Global Connected)</span>
                   <ChevronDown className="w-4 h-4 text-[#2B2A27]/40" />
                 </div>
@@ -120,7 +120,7 @@ export function PaymentsTab({
                     Currency
                   </label>
                   <Select
-                    className="h-11"
+                    className="h-11 w-full"
                     value={currency}
                     onChange={(val) => setCurrency(val)}
                     options={[
@@ -129,6 +129,7 @@ export function PaymentsTab({
                       { value: "EUR", label: "EUR (€)" },
                       { value: "GBP", label: "GBP (£)" },
                     ]}
+                    buttonClassName="w-full h-full border border-[#E4E1D4] rounded-xl bg-white font-semibold text-[#171614] text-sm text-left flex justify-between items-center px-4 hover:bg-[#FDFBF2] transition-all cursor-pointer"
                   />
                 </div>
               </div>
@@ -167,7 +168,7 @@ export function PaymentsTab({
                   <button
                     type="button"
                     onClick={() => setSeatsMax(Math.max(1, seatsMax - 1))}
-                    className="w-11 h-11 border border-[#E4E1D4] rounded-xl flex items-center justify-center font-bold text-lg hover:bg-gray-50 active:scale-95 transition-all cursor-pointer"
+                    className="w-11 h-11 border border-[#E4E1D4] rounded-full flex items-center justify-center font-bold text-lg hover:bg-gray-50 active:scale-95 transition-all cursor-pointer"
                   >
                     -
                   </button>
@@ -176,16 +177,16 @@ export function PaymentsTab({
                     min="1"
                     value={seatsMax || 1}
                     onChange={(e) => setSeatsMax(parseInt(e.target.value, 10) || 1)}
-                    className="w-16 h-11 border border-[#E4E1D4] rounded-xl text-center text-sm font-bold text-[#171614] focus:outline-none focus:border-[#B7ACF7]"
+                    className="w-16 h-11 border border-[#E4E1D4] rounded-full text-center text-sm font-bold text-[#171614] focus:outline-none focus:border-[#B7ACF7]"
                   />
                   <button
                     type="button"
                     onClick={() => setSeatsMax(seatsMax + 1)}
-                    className="w-11 h-11 border border-[#E4E1D4] rounded-xl flex items-center justify-center font-bold text-lg hover:bg-gray-50 active:scale-95 transition-all cursor-pointer"
+                    className="w-11 h-11 border border-[#E4E1D4] rounded-full flex items-center justify-center font-bold text-lg hover:bg-gray-50 active:scale-95 transition-all cursor-pointer"
                   >
                     +
                   </button>
-                  <span className="text-xs font-semibold text-[#2B2A27]/60 ml-2">seats max</span>
+                  <span className="font-sans text-xs font-semibold text-[#2B2A27]/60 ml-2">seats max</span>
                 </div>
               </div>
 

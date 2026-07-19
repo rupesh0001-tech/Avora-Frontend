@@ -65,8 +65,11 @@
     list-style: none;
   }
 
-  button {
+  input, select, textarea, button {
     font-family: inherit;
+  }
+
+  button {
     cursor: pointer;
   }
 
@@ -78,4 +81,16 @@
     font-size: inherit;
     font-weight: inherit;
   }
+
+  /* Hide default browser spinner arrows on number inputs */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
 }
+

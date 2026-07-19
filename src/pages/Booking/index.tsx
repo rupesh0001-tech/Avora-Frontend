@@ -3,12 +3,15 @@ import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { Calendar as CalendarIcon, Clock, Globe, MapPin, Video, CheckCircle2, ChevronLeft, ChevronRight, ArrowLeft } from "lucide-react";
 import { Button } from "../../components/ui/Button";
+import { Select } from "../../components/ui/Select";
+import clsx from "clsx";
 
 interface HostDetails {
   firstName: string | null;
   lastName: string | null;
   imageUrl: string | null;
   username: string;
+  timezone: string;
 }
 
 interface EventType {
@@ -17,6 +20,7 @@ interface EventType {
   slug: string;
   duration: number;
   price: number;
+  currency?: string;
   isActive: boolean;
   locationType: string;
   locationDetails: string;
@@ -172,7 +176,38 @@ export default function BookingPage() {
   // Sync step and date/time parameters with browser query strings
   useEffect(() => {
     if (eventType) {
-      if (stepParam === "2" && dateParam && timeParam) {
+      // If we are back to step 1 (calendar page) and successBooking exists,
+      // we clear successBooking so they can select a new date/time slot.
+      if (successBooking && (!stepParam || stepParam === "1")) {
+        setSuccessBooking(null);
+        sessionStorage.removeItem(`booking_success_${username}_${slug}`);
+        // Let execution flow continue to setup dateTime step
+      } else if (successBooking) {
+        if (stepParam !== "3" && stepParam !== "success") {
+          setSearchParams({ step: "3" }, { replace: true });
+        }
+        setStep("success");
+        return;
+      }
+
+      if (stepParam === "3" || stepParam === "success") {
+        // Try to load booking success details from sessionStorage on refresh
+        const savedDataStr = sessionStorage.getItem(`booking_success_${username}_${slug}`);
+        if (savedDataStr) {
+          try {
+            const savedData = JSON.parse(savedDataStr);
+            setSuccessBooking(savedData.successBooking);
+            if (savedData.selectedTime) setSelectedTime(savedData.selectedTime);
+            if (savedData.attendeeName) setAttendeeName(savedData.attendeeName);
+            if (savedData.attendeeEmail) setAttendeeEmail(savedData.attendeeEmail);
+            setStep("success");
+            return;
+          } catch (e) {
+            console.error("Failed to parse saved success booking details:", e);
+          }
+        }
+        setStep("success");
+      } else if (stepParam === "2" && dateParam && timeParam) {
         // Parse "YYYY-MM-DD" as LOCAL midnight so July 24 stays July 24
         const [yr, mo, dy] = dateParam.split("-").map(Number);
         const parsedDate = new Date(yr, (mo ?? 1) - 1, dy ?? 1);
@@ -180,8 +215,6 @@ export default function BookingPage() {
         setCurrentMonth(parsedDate);
         setSelectedTime(timeParam);
         setStep("form");
-      } else if (stepParam === "3" || stepParam === "success") {
-        setStep("success");
       } else {
         setStep("dateTime");
         // Pre-select first date initially
@@ -209,7 +242,7 @@ export default function BookingPage() {
         }
       }
     }
-  }, [eventType, stepParam, dateParam, timeParam]);
+  }, [eventType, stepParam, dateParam, timeParam, successBooking, searchParams, setSearchParams, username, slug]);
 
   // Load booked slots when a date is selected
   useEffect(() => {
@@ -217,14 +250,14 @@ export default function BookingPage() {
       if (!username || !slug || !selectedDate) return;
       try {
         const dateStr = localDateStr(selectedDate);
-        const res = await axios.get(`http://localhost:5001/api/bookings/public/${username}/${slug}?date=${dateStr}`);
+        const res = await axios.get(`http://localhost:5001/api/bookings/public/${username}/${slug}?date=${dateStr}&timezone=${attendeeTimezone}`);
         setBookedSlots(res.data.bookedSlots || []);
       } catch (err) {
         console.error("Failed to load booked slots for date:", err);
       }
     }
     loadBookedSlots();
-  }, [selectedDate, username, slug]);
+  }, [selectedDate, username, slug, attendeeTimezone]);
 
   // Update query parameters when slot selection is updated
   const handleSelectDateTime = (date: Date, time: string) => {
@@ -247,18 +280,18 @@ export default function BookingPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-[#FDFBF2]">
-        <div className="w-12 h-12 rounded-full border-4 border-[#171614] border-t-transparent animate-spin"></div>
+      <div className={clsx('flex', 'h-screen', 'w-screen', 'items-center', 'justify-center', 'bg-[#FDFBF2]')}>
+        <div className={clsx('w-12', 'h-12', 'rounded-full', 'border-4', 'border-[#171614]', 'border-t-transparent', 'animate-spin')}></div>
       </div>
     );
   }
 
   if (errorMsg || !eventType || !host) {
     return (
-      <div className="min-h-screen bg-[#FDFBF2] flex flex-col justify-center items-center p-6 text-center">
-        <div className="bg-white border border-[#E4E1D4] rounded-2xl p-8 max-w-md shadow-lg space-y-4">
-          <h3 className="font-cal-sans text-xl font-bold text-[#E5484D]">Link Unavailable</h3>
-          <p className="text-sm font-semibold text-[#2B2A27]/70">{errorMsg || "The requested scheduling page is not active."}</p>
+      <div className={clsx('min-h-screen', 'bg-[#FDFBF2]', 'flex', 'flex-col', 'justify-center', 'items-center', 'p-6', 'text-center')}>
+        <div className={clsx('bg-white', 'border', 'border-[#E4E1D4]', 'rounded-2xl', 'p-8', 'max-w-md', 'shadow-lg', 'space-y-4')}>
+          <h3 className={clsx('font-cal-sans', 'text-xl', 'font-bold', 'text-[#E5484D]')}>Link Unavailable</h3>
+          <p className={clsx('text-sm', 'font-semibold', 'text-[#2B2A27]/70')}>{errorMsg || "The requested scheduling page is not active."}</p>
           <Button onClick={() => navigate("/")} variant="primary" size="sm">Go Home</Button>
         </div>
       </div>
@@ -336,13 +369,38 @@ export default function BookingPage() {
     }
   };
 
-  const generateAvailableTimeSlots = () => {
-    if (!selectedDate) return [];
+  const getPartsInTimezone = (timestamp: number, tz: string) => {
+    try {
+      const formatter = new Intl.DateTimeFormat("en-US", {
+        timeZone: tz,
+        weekday: "long",
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+        hour12: false,
+      });
+      const parts = formatter.formatToParts(new Date(timestamp));
+      const p = (key: string) => parts.find((x) => x.type === key)?.value ?? "0";
+      return {
+        weekday: p("weekday"),
+        hour: parseInt(p("hour")) % 24,
+        minute: parseInt(p("minute")),
+      };
+    } catch (e) {
+      const d = new Date(timestamp);
+      const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      return {
+        weekday: weekdays[d.getUTCDay()],
+        hour: d.getUTCHours(),
+        minute: d.getUTCMinutes(),
+      };
+    }
+  };
 
-    const weekdayName = selectedDate.toLocaleDateString("en-US", { weekday: "long" });
-    const dayConfig = eventType.availability?.find((a) => a.day === weekdayName);
-    
-    if (!dayConfig || !dayConfig.enabled || !dayConfig.slots) return [];
+  const generateAvailableTimeSlots = () => {
+    if (!selectedDate || !eventType || !host) return [];
 
     const slots: string[] = [];
 
@@ -352,12 +410,8 @@ export default function BookingPage() {
     const d = String(selectedDate.getDate()).padStart(2, "0");
     const dateStr = `${y}-${mo}-${d}`;
 
-    // isToday: compare local date parts (not UTC-converted ISO strings)
-    const now = new Date();
-    const isToday =
-      selectedDate.getFullYear() === now.getFullYear() &&
-      selectedDate.getMonth() === now.getMonth() &&
-      selectedDate.getDate() === now.getDate();
+    // Get the start of the selected date in the attendee's selected timezone
+    const dayStartUtc = slotToUTC(dateStr, "00:00", attendeeTimezone);
 
     // Check notice period buffer
     const noticeMinutes = eventType.minimumNotice ?? 120;
@@ -366,63 +420,76 @@ export default function BookingPage() {
     const beforeBuffer = eventType.beforeBuffer ?? 0;
     const afterBuffer = eventType.afterBuffer ?? 0;
 
-    dayConfig.slots.forEach((range) => {
-      let currentMinutes = timeToMinutes(range.startTime);
-      const endMinutes = timeToMinutes(range.endTime);
+    const step = eventType.slotInterval && eventType.slotInterval > 0 
+      ? eventType.slotInterval 
+      : eventType.duration;
 
-      const step = eventType.slotInterval && eventType.slotInterval > 0 
-        ? eventType.slotInterval 
-        : eventType.duration;
+    const hostTimezone = host.timezone || "UTC";
 
-      while (currentMinutes + eventType.duration <= endMinutes) {
-        const slotTimeStr = minutesToTime(currentMinutes);
+    // Loop through 24 hours of the selected date in the attendee's timezone
+    for (let offsetMinutes = 0; offsetMinutes <= 1440 - eventType.duration; offsetMinutes += step) {
+      const candidateUtc = dayStartUtc + offsetMinutes * 60 * 1000;
 
-        // Interpret slot time in the attendee's selected timezone
-        const sStart = slotToUTC(dateStr, slotTimeStr, attendeeTimezone);
-
-        // Only skip past slots or those violating minimum notice
-        if (sStart < minTimeWindow) {
-          currentMinutes += step;
-          continue;
-        }
-
-        let isBusy = false;
-        
-        if (eventType.seatsEnabled) {
-          // Count bookings sharing exact start time
-          const count = bookedSlots.filter(
-            (b) => new Date(b.startTime).getTime() === sStart
-          ).length;
-          if (count >= (eventType.seatsMax ?? 1)) {
-            isBusy = true;
-          }
-        } else {
-          // Standard overlap check with buffers
-          isBusy = bookedSlots.some((booked) => {
-            const bStart = new Date(booked.startTime).getTime();
-            const bEnd = new Date(booked.endTime).getTime();
-            
-            const combinedAfterBuffer = afterBuffer * 60 * 1000;
-            const combinedBeforeBuffer = beforeBuffer * 60 * 1000;
-
-            return (
-              sStart < bEnd + combinedAfterBuffer &&
-              (sStart + eventType.duration * 60 * 1000) > bStart - combinedBeforeBuffer
-            );
-          });
-        }
-
-        if (!isBusy) {
-          // If showOnlyFirstAvailableSlot is enabled, only take the first slot of the day
-          if (eventType.showOnlyFirstAvailableSlot && slots.length > 0) {
-            break;
-          }
-          slots.push(slotTimeStr);
-        }
-        
-        currentMinutes += step;
+      // Only skip past slots or those violating minimum notice
+      if (candidateUtc < minTimeWindow) {
+        continue;
       }
-    });
+
+      // Convert candidateUtc to host's local timezone details to check availability
+      const hostParts = getPartsInTimezone(candidateUtc, hostTimezone);
+      const hostDayConfig = eventType.availability?.find((a) => a.day === hostParts.weekday);
+
+      if (!hostDayConfig || !hostDayConfig.enabled || !hostDayConfig.slots) {
+        continue;
+      }
+
+      const hostStartMins = hostParts.hour * 60 + hostParts.minute;
+      const hostEndMins = hostStartMins + eventType.duration;
+
+      const fits = hostDayConfig.slots.some((range) => {
+        const rangeStartMins = timeToMinutes(range.startTime);
+        const rangeEndMins = timeToMinutes(range.endTime);
+        return hostStartMins >= rangeStartMins && hostEndMins <= rangeEndMins;
+      });
+
+      if (!fits) {
+        continue;
+      }
+
+      // Check conflict with bookedSlots
+      let isBusy = false;
+      if (eventType.seatsEnabled) {
+        // Count bookings sharing exact start time
+        const count = bookedSlots.filter(
+          (b) => new Date(b.startTime).getTime() === candidateUtc
+        ).length;
+        if (count >= (eventType.seatsMax ?? 1)) {
+          isBusy = true;
+        }
+      } else {
+        // Standard overlap check with buffers
+        isBusy = bookedSlots.some((booked) => {
+          const bStart = new Date(booked.startTime).getTime();
+          const bEnd = new Date(booked.endTime).getTime();
+          
+          const combinedAfterBuffer = afterBuffer * 60 * 1000;
+          const combinedBeforeBuffer = beforeBuffer * 60 * 1000;
+
+          return (
+            candidateUtc < bEnd + combinedAfterBuffer &&
+            (candidateUtc + eventType.duration * 60 * 1000) > bStart - combinedBeforeBuffer
+          );
+        });
+      }
+
+      if (!isBusy) {
+        // If showOnlyFirstAvailableSlot is enabled, only take the first slot of the day
+        if (eventType.showOnlyFirstAvailableSlot && slots.length > 0) {
+          break;
+        }
+        slots.push(minutesToTime(offsetMinutes));
+      }
+    }
 
     return slots;
   };
@@ -627,8 +694,16 @@ export default function BookingPage() {
                 razorpayPaymentId: response.razorpay_payment_id,
                 razorpaySignature: response.razorpay_signature,
               });
-              setSuccessBooking(verifyRes.data.booking);
-              setSearchParams({ step: "3" });
+              const booking = verifyRes.data.booking;
+              setSuccessBooking(booking);
+              const successData = {
+                successBooking: booking,
+                selectedTime,
+                attendeeName,
+                attendeeEmail
+              };
+              sessionStorage.setItem(`booking_success_${username}_${slug}`, JSON.stringify(successData));
+              setSearchParams({ step: "3" }, { replace: true });
               setStep("success");
             } catch (verifyErr: any) {
               setErrorMsg(verifyErr.response?.data?.error || "Payment verification failed.");
@@ -655,8 +730,16 @@ export default function BookingPage() {
         rzp.open();
       } else {
         // Free booking directly transitions to success step
-        setSuccessBooking(res.data.booking);
-        setSearchParams({ step: "3" });
+        const booking = res.data.booking;
+        setSuccessBooking(booking);
+        const successData = {
+          successBooking: booking,
+          selectedTime,
+          attendeeName,
+          attendeeEmail
+        };
+        sessionStorage.setItem(`booking_success_${username}_${slug}`, JSON.stringify(successData));
+        setSearchParams({ step: "3" }, { replace: true });
         setStep("success");
       }
     } catch (err: any) {
@@ -683,13 +766,13 @@ export default function BookingPage() {
               onClick={handleBackToDateTime}
               className={`mb-4 flex items-center gap-1.5 text-xs font-bold hover:underline ${theme.textMuted} hover:${theme.textMain} cursor-pointer`}
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className={clsx('w-4', 'h-4')} />
               Back
             </button>
           )}
 
           {/* Host details */}
-          <div className="flex items-center gap-3">
+          <div className={clsx('flex', 'items-center', 'gap-3')}>
             {host.imageUrl ? (
               <img
                 src={host.imageUrl}
@@ -713,7 +796,7 @@ export default function BookingPage() {
             <h1 className={`font-cal-sans text-xl font-bold uppercase tracking-wider ${theme.textMain}`}>
               {eventType.title}
             </h1>
-            <div className="flex items-center gap-2">
+            <div className={clsx('flex', 'items-center', 'gap-2')}>
               <span className={`inline-block text-[10px] font-extrabold px-2 py-0.5 rounded-md ${theme.tagBg}`}>
                 {eventType.price > 0 ? (
                   `${
@@ -728,16 +811,16 @@ export default function BookingPage() {
           </div>
 
           <div className={`space-y-3.5 text-xs font-semibold ${theme.textMuted}`}>
-            <div className="flex items-center gap-2.5">
-              <Clock className="w-4.5 h-4.5 text-current opacity-70" />
+            <div className={clsx('flex', 'items-center', 'gap-2.5')}>
+              <Clock className={clsx('w-4.5', 'h-4.5', 'text-current', 'opacity-70')} />
               <span>{eventType.duration} Minutes</span>
             </div>
             
-            <div className="flex items-center gap-2.5">
+            <div className={clsx('flex', 'items-center', 'gap-2.5')}>
               {eventType.locationType === "Video" ? (
-                <Video className="w-4.5 h-4.5 text-current opacity-70" />
+                <Video className={clsx('w-4.5', 'h-4.5', 'text-current', 'opacity-70')} />
               ) : (
-                <MapPin className="w-4.5 h-4.5 text-current opacity-70" />
+                <MapPin className={clsx('w-4.5', 'h-4.5', 'text-current', 'opacity-70')} />
               )}
               <span>
                 {eventType.locationType} ({eventType.locationDetails})
@@ -745,8 +828,8 @@ export default function BookingPage() {
             </div>
 
             {selectedDate && (
-              <div className="flex items-center gap-2.5 text-[#23C585] font-bold animate-in fade-in duration-200">
-                <CalendarIcon className="w-4.5 h-4.5 text-[#23C585]" />
+              <div className={clsx('flex', 'items-center', 'gap-2.5', 'text-[#23C585]', 'font-bold', 'animate-in', 'fade-in', 'duration-200')}>
+                <CalendarIcon className={clsx('w-4.5', 'h-4.5', 'text-[#23C585]')} />
                 <span>
                   {selectedDate.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
                   {selectedTime && ` @ ${formatTimeSlotLabel(selectedTime)}`}
@@ -755,18 +838,16 @@ export default function BookingPage() {
             )}
 
             <div className={`flex items-center gap-2.5 ${theme.textFaded}`}>
-              <Globe className="w-4.5 h-4.5 text-current opacity-70 flex-shrink-0" />
-              <select
+              <Globe className={clsx('w-4.5', 'h-4.5', 'text-current', 'opacity-70', 'flex-shrink-0')} />
+              <Select
                 value={attendeeTimezone}
-                onChange={(e) => setAttendeeTimezone(e.target.value)}
-                className={`bg-transparent text-xs font-semibold focus:outline-none cursor-pointer border-b border-transparent hover:border-current py-0.5 ${theme.textMain}`}
-              >
-                {TIMEZONES.map((tz) => (
-                  <option key={tz.value} value={tz.value} className="text-black bg-white">
-                    {tz.label}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setAttendeeTimezone(val)}
+                options={TIMEZONES}
+                size="sm"
+                className="w-48"
+                buttonClassName={`bg-transparent text-xs font-semibold focus:outline-none cursor-pointer flex justify-between items-center gap-1 hover:underline py-0.5 border-none text-left ${theme.textMain}`}
+                menuClassName={`absolute bottom-full left-0 mb-1 bg-white border border-[#E4E1D4] rounded-xl shadow-lg z-30 py-1 font-semibold text-[#171614] max-h-56 overflow-y-auto w-48`}
+              />
             </div>
           </div>
         </div>
@@ -778,23 +859,23 @@ export default function BookingPage() {
           {step === "dateTime" && (
             <>
               {/* Calendar pane */}
-              <div className="flex-1 p-6 md:p-8 space-y-4">
-                <div className="flex justify-between items-center">
+              <div className={clsx('flex-1', 'p-6', 'md:p-8', 'space-y-4')}>
+                <div className={clsx('flex', 'justify-between', 'items-center')}>
                   <h3 className={`font-cal-sans text-sm font-bold ${theme.textMain} uppercase tracking-wider`}>
                     Select Date & Time
                   </h3>
-                  <div className="flex items-center gap-1">
+                  <div className={clsx('flex', 'items-center', 'gap-1')}>
                     <button
                       onClick={handlePrevMonth}
                       className={`p-1.5 border ${theme.borderMain} hover:${theme.dayHover} rounded-lg cursor-pointer ${theme.textMuted}`}
                     >
-                      <ChevronLeft className="w-4 h-4" />
+                      <ChevronLeft className={clsx('w-4', 'h-4')} />
                     </button>
                     <button
                       onClick={handleNextMonth}
                       className={`p-1.5 border ${theme.borderMain} hover:${theme.dayHover} rounded-lg cursor-pointer ${theme.textMuted}`}
                     >
-                      <ChevronRight className="w-4 h-4" />
+                      <ChevronRight className={clsx('w-4', 'h-4')} />
                     </button>
                   </div>
                 </div>
@@ -812,7 +893,7 @@ export default function BookingPage() {
                 </div>
 
                 {/* Month Days Grid */}
-                <div className="grid grid-cols-7 gap-1">
+                <div className={clsx('grid', 'grid-cols-7', 'gap-1')}>
                   {/* Empty offsets for start of month */}
                   {Array.from({ length: getFirstDayIndex(currentMonth) }).map((_, i) => (
                     <div key={`offset-${i}`} className="py-2" />
@@ -859,13 +940,13 @@ export default function BookingPage() {
                   Available Slots
                 </div>
 
-                <div className="flex-1 overflow-y-auto space-y-2 pr-1 max-h-[300px]">
+                <div className={clsx('flex-1', 'overflow-y-auto', 'space-y-2', 'pr-1', 'max-h-[300px]')}>
                   {selectedDate ? (
                     availableSlots.length > 0 ? (
                       availableSlots.map((slot) => {
                         const isTimeSelected = selectedTime === slot;
                         return (
-                          <div key={slot} className="space-y-1.5 animate-in fade-in duration-150">
+                          <div key={slot} className={clsx('space-y-1.5', 'animate-in', 'fade-in', 'duration-150')}>
                             <button
                               type="button"
                               onClick={() => handleSelectDateTime(selectedDate, slot)}
@@ -877,7 +958,7 @@ export default function BookingPage() {
                             >
                               <span>{formatTimeSlotLabel(slot)}</span>
                               {eventType.seatsEnabled && eventType.seatsShowCount && (
-                                <span className="block text-[8px] opacity-75 font-semibold mt-0.5">
+                                <span className={clsx('block', 'text-[8px]', 'opacity-75', 'font-semibold', 'mt-0.5')}>
                                   {getRemainingSeatsForSlot(slot)} seats available
                                 </span>
                               )}
@@ -908,7 +989,7 @@ export default function BookingPage() {
               </h3>
 
               {errorMsg && (
-                <div className="p-3 bg-[#E5484D]/10 border border-[#E5484D]/30 text-[#E5484D] text-xs font-bold rounded-xl">
+                <div className={clsx('p-3', 'bg-[#E5484D]/10', 'border', 'border-[#E5484D]/30', 'text-[#E5484D]', 'text-xs', 'font-bold', 'rounded-xl')}>
                   ✕ {errorMsg}
                 </div>
               )}
@@ -1027,18 +1108,13 @@ export default function BookingPage() {
                   <label className={`block text-xs font-bold ${theme.textMain} uppercase tracking-wider`}>
                     Timezone <span className="text-[#E5484D]">*</span>
                   </label>
-                  <select
-                    required
+                  <Select
                     value={attendeeTimezone}
-                    onChange={(e) => setAttendeeTimezone(e.target.value)}
-                    className={`w-full px-4 py-2.5 border ${theme.borderMain} rounded-xl text-xs ${theme.inputBg} font-semibold ${theme.inputText} focus:outline-none focus:border-[#B7ACF7] transition-all`}
-                  >
-                    {TIMEZONES.map((tz) => (
-                      <option key={tz.value} value={tz.value} className="text-black bg-white">
-                        {tz.label}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => setAttendeeTimezone(val)}
+                    options={TIMEZONES}
+                    buttonClassName={`w-full border ${theme.borderMain} rounded-xl text-xs ${theme.inputBg} font-semibold ${theme.inputText} focus:outline-none focus:border-[#B7ACF7] transition-all text-left flex justify-between items-center px-4 py-2.5`}
+                    menuClassName={`absolute top-full left-0 right-0 mt-1 ${theme.inputBg} border ${theme.borderMain} rounded-xl shadow-lg z-30 py-1 font-semibold ${theme.inputText} max-h-56 overflow-y-auto`}
+                  />
                 </div>
               </div>
 
@@ -1049,9 +1125,19 @@ export default function BookingPage() {
                   size="md"
                   rounded="xl"
                   disabled={isSubmitting}
-                  className="w-full md:w-auto"
+                  className={clsx('w-full', 'md:w-auto')}
                 >
-                  {isSubmitting ? "Scheduling..." : "Schedule Event"}
+                  {isSubmitting 
+                    ? "Scheduling..." 
+                    : eventType.price > 0 
+                      ? `Pay ${
+                          eventType.currency === "INR" ? "₹" :
+                          eventType.currency === "USD" ? "$" :
+                          eventType.currency === "EUR" ? "€" :
+                          eventType.currency === "GBP" ? "£" : "$"
+                        }${eventType.price} and Book`
+                      : "Schedule Event"
+                  }
                 </Button>
               </div>
             </form>
@@ -1060,7 +1146,7 @@ export default function BookingPage() {
           {/* STEP 3: Booking Success */}
           {step === "success" && successBooking && (
             <div className={`flex-1 p-6 md:p-10 flex flex-col justify-center items-center text-center space-y-5 ${theme.bgMain}`}>
-              <CheckCircle2 className="w-16 h-16 text-[#23C585]" />
+              <CheckCircle2 className={clsx('w-16', 'h-16', 'text-[#23C585]')} />
               
               <div className="space-y-2">
                 <h2 className={`font-cal-sans text-xl font-bold uppercase tracking-wider ${theme.textMain}`}>

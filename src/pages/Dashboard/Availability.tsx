@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Save, ChevronDown, Globe } from "lucide-react";
 import { useApi } from "../../lib/api";
 import { Button } from "../../components/ui/Button";
+import { Select } from "../../components/ui/Select";
 import clsx from "clsx";
 
 const TIMEZONE_OPTIONS = [
@@ -146,15 +147,13 @@ export default function AvailabilityPage() {
           <div className="flex items-center gap-2 mt-3 text-xs font-semibold text-[#2B2A27]/70">
             <Globe className="w-3.5 h-3.5 flex-shrink-0" />
             <span>Timezone:</span>
-            <select
+            <Select
               value={timezone}
-              onChange={(e) => setTimezone(e.target.value)}
-              className="bg-white border border-[#E4E1D4] rounded-lg px-2 py-1 text-xs font-semibold text-[#171614] focus:outline-none focus:border-[#171614] cursor-pointer"
-            >
-              {TIMEZONE_OPTIONS.map((tz) => (
-                <option key={tz.value} value={tz.value}>{tz.label}</option>
-              ))}
-            </select>
+              onChange={(val) => setTimezone(val)}
+              options={TIMEZONE_OPTIONS}
+              size="sm"
+              className="w-48"
+            />
           </div>
         </div>
 

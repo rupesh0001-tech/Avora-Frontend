@@ -144,23 +144,25 @@ export function LimitsTab({
             <label className="flex items-center gap-1 text-xs font-bold text-[#171614] uppercase tracking-wider">
               Minimum notice <Info className="w-3.5 h-3.5 opacity-60" />
             </label>
-            <div className="flex border border-[#E4E1D4] rounded-xl bg-white focus-within:border-[#B7ACF7] overflow-hidden">
+            <div className="grid grid-cols-5 gap-2">
               <input
                 type="number"
                 min="0"
                 value={noticeValue}
                 onChange={(e) => handleNoticeChange(Number(e.target.value) || 0, noticeUnit)}
-                className="w-full px-4 py-2.5 text-xs bg-transparent focus:outline-none font-semibold text-[#171614]"
+                className="col-span-3 px-4 py-2.5 text-xs bg-white border border-[#E4E1D4] rounded-xl focus:outline-none focus:border-[#B7ACF7] transition-all font-semibold text-[#171614]"
               />
-              <select
+              <Select
                 value={noticeUnit}
-                onChange={(e) => handleNoticeChange(noticeValue, e.target.value as any)}
-                className="px-3 border-l border-[#E4E1D4] bg-gray-50 text-xs font-semibold text-[#171614] focus:outline-none cursor-pointer"
-              >
-                <option value="minutes">Minutes</option>
-                <option value="hours">Hours</option>
-                <option value="days">Days</option>
-              </select>
+                onChange={(val) => handleNoticeChange(noticeValue, val as any)}
+                options={[
+                  { value: "minutes", label: "Minutes" },
+                  { value: "hours", label: "Hours" },
+                  { value: "days", label: "Days" },
+                ]}
+                className="col-span-2"
+                buttonClassName="w-full px-4 py-2.5 border border-[#E4E1D4] rounded-xl bg-white font-bold text-[#171614] text-xs text-left flex justify-between items-center hover:bg-[#FDFBF2] transition-all cursor-pointer"
+              />
             </div>
           </div>
 
@@ -210,8 +212,8 @@ export function LimitsTab({
               </label>
             </div>
             {freqConfig.enabled && (
-              <div className="flex items-center gap-3 p-3 bg-gray-50 border border-[#E4E1D4] rounded-xl animate-in fade-in duration-100">
-                <span className="text-xs font-semibold text-[#171614]">Max bookings</span>
+              <div className="flex items-center gap-3 py-4.5 px-5 bg-gray-50 border border-[#E4E1D4] rounded-2xl animate-in fade-in duration-100">
+                <span className="text-xs font-bold text-[#171614]">Max bookings</span>
                 <input
                   type="number"
                   min="1"
@@ -222,18 +224,19 @@ export function LimitsTab({
                       maxBookings: parseInt(e.target.value, 10) || 1,
                     })
                   }
-                  className="w-16 px-2 py-1 border border-[#E4E1D4] rounded-lg text-xs text-center font-bold text-[#171614] focus:outline-none"
+                  className="w-20 px-3 py-2 border border-[#E4E1D4] rounded-xl text-xs text-center font-bold text-[#171614] bg-white focus:outline-none focus:border-[#B7ACF7] transition-all"
                 />
-                <span className="text-xs font-semibold text-[#171614]">per</span>
+                <span className="text-xs font-bold text-[#171614]">per</span>
                 <Select
                   value={freqConfig.period}
                   onChange={(val) => setLimitBookingFrequency({ ...freqConfig, period: val })}
-                  size="sm"
                   options={[
                     { value: "day", label: "Day" },
                     { value: "week", label: "Week" },
                     { value: "month", label: "Month" },
                   ]}
+                  className="w-32"
+                  buttonClassName="w-full px-3 py-2 border border-[#E4E1D4] rounded-xl bg-white font-bold text-[#171614] text-xs text-left flex justify-between items-center hover:bg-[#FDFBF2] transition-all cursor-pointer"
                 />
               </div>
             )}
@@ -263,8 +266,8 @@ export function LimitsTab({
               </label>
             </div>
             {durationConfig.enabled && (
-              <div className="flex items-center gap-3 p-3 bg-gray-50 border border-[#E4E1D4] rounded-xl animate-in fade-in duration-100">
-                <span className="text-xs font-semibold text-[#171614]">Max duration</span>
+              <div className="flex items-center gap-3 py-4.5 px-5 bg-gray-50 border border-[#E4E1D4] rounded-2xl animate-in fade-in duration-100">
+                <span className="text-xs font-bold text-[#171614]">Max duration</span>
                 <input
                   type="number"
                   min="1"
@@ -275,20 +278,21 @@ export function LimitsTab({
                       maxMinutes: parseInt(e.target.value, 10) || 30,
                     })
                   }
-                  className="w-20 px-2 py-1 border border-[#E4E1D4] rounded-lg text-xs text-center font-bold text-[#171614] focus:outline-none"
+                  className="w-24 px-3 py-2 border border-[#E4E1D4] rounded-xl text-xs text-center font-bold text-[#171614] bg-white focus:outline-none focus:border-[#B7ACF7] transition-all"
                 />
-                <span className="text-xs font-semibold text-[#171614]">minutes per</span>
+                <span className="text-xs font-bold text-[#171614]">minutes per</span>
                 <Select
                   value={durationConfig.period}
                   onChange={(val) =>
                     setLimitTotalBookingDuration({ ...durationConfig, period: val })
                   }
-                  size="sm"
                   options={[
                     { value: "day", label: "Day" },
                     { value: "week", label: "Week" },
                     { value: "month", label: "Month" },
                   ]}
+                  className="w-32"
+                  buttonClassName="w-full px-3 py-2 border border-[#E4E1D4] rounded-xl bg-white font-bold text-[#171614] text-xs text-left flex justify-between items-center hover:bg-[#FDFBF2] transition-all cursor-pointer"
                 />
               </div>
             )}
@@ -318,8 +322,8 @@ export function LimitsTab({
               </label>
             </div>
             {futureConfig.enabled && (
-              <div className="flex items-center gap-3 p-3 bg-gray-50 border border-[#E4E1D4] rounded-xl animate-in fade-in duration-100">
-                <span className="text-xs font-semibold text-[#171614]">Allow bookings up to</span>
+              <div className="flex items-center gap-3 py-4.5 px-5 bg-gray-50 border border-[#E4E1D4] rounded-2xl animate-in fade-in duration-100">
+                <span className="text-xs font-bold text-[#171614]">Allow bookings up to</span>
                 <input
                   type="number"
                   min="1"
@@ -330,9 +334,9 @@ export function LimitsTab({
                       days: parseInt(e.target.value, 10) || 30,
                     })
                   }
-                  className="w-16 px-2 py-1 border border-[#E4E1D4] rounded-lg text-xs text-center font-bold text-[#171614] focus:outline-none"
+                  className="w-20 px-3 py-2 border border-[#E4E1D4] rounded-xl text-xs text-center font-bold text-[#171614] bg-white focus:outline-none focus:border-[#B7ACF7] transition-all"
                 />
-                <span className="text-xs font-semibold text-[#171614]">days in the future</span>
+                <span className="text-xs font-bold text-[#171614]">days in the future</span>
               </div>
             )}
           </div>
@@ -361,8 +365,8 @@ export function LimitsTab({
               </label>
             </div>
             {upcomingConfig.enabled && (
-              <div className="flex items-center gap-3 p-3 bg-gray-50 border border-[#E4E1D4] rounded-xl animate-in fade-in duration-100">
-                <span className="text-xs font-semibold text-[#171614]">Max active bookings</span>
+              <div className="flex items-center gap-3 py-4.5 px-5 bg-gray-50 border border-[#E4E1D4] rounded-2xl animate-in fade-in duration-100">
+                <span className="text-xs font-bold text-[#171614]">Max active bookings</span>
                 <input
                   type="number"
                   min="1"
@@ -373,9 +377,9 @@ export function LimitsTab({
                       maxBookings: parseInt(e.target.value, 10) || 1,
                     })
                   }
-                  className="w-16 px-2 py-1 border border-[#E4E1D4] rounded-lg text-xs text-center font-bold text-[#171614] focus:outline-none"
+                  className="w-20 px-3 py-2 border border-[#E4E1D4] rounded-xl text-xs text-center font-bold text-[#171614] bg-white focus:outline-none focus:border-[#B7ACF7] transition-all"
                 />
-                <span className="text-xs font-semibold text-[#171614]">per guest email</span>
+                <span className="text-xs font-bold text-[#171614]">per guest email</span>
               </div>
             )}
           </div>
