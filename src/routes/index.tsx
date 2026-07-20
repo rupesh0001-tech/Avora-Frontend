@@ -52,6 +52,8 @@ export function AppRoutes() {
       <Route path="/onboard" element={<OnboardingPage />} />
       <Route path="/onboarding" element={<Navigate to="/onboard" replace />} />
       <Route path="/book/:username/:slug" element={<BookingPage />} />
+      <Route path="/booking/:bookingId/cancel" element={<BookingPage action="cancel" />} />
+      <Route path="/booking/:bookingId/reschedule" element={<BookingPage action="reschedule" />} />
       <Route path="/preview" element={<DemoPreviewPage />} />
 
       {/* Catch-all 404 Route */}

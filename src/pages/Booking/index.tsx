@@ -27,6 +27,28 @@ interface EventType {
   availability: Array<{ day: string; enabled: boolean; slots: Array<{ startTime: string; endTime: string }> }>;
   bookingFields: Array<{ id: string; label: string; type: string; status: "Hidden" | "Optional" | "Required"; editable: boolean }>;
   appearance: string;
+  seatsEnabled?: boolean;
+  seatsMax?: number;
+  seatsShareInfo?: boolean;
+  seatsShowCount?: boolean;
+  slotInterval?: number | null;
+  showOnlyFirstAvailableSlot?: boolean;
+  rescheduleEnabled?: boolean;
+  cancelEnabled?: boolean;
+  rescheduleNotice?: number;
+  cancelNotice?: number;
+  cancellationPolicy?: string;
+  limitFutureBookings?: any;
+  minimumNotice?: number;
+  beforeBuffer?: number;
+  afterBuffer?: number;
+  user?: {
+    firstName: string | null;
+    lastName: string | null;
+    imageUrl: string | null;
+    username: string;
+    timezone: string;
+  };
 }
 
 interface BookedSlot {
@@ -60,8 +82,8 @@ const localDateStr = (d: Date): string => {
   return `${y}-${mo}-${day}`;
 };
 
-export default function BookingPage() {
-  const { username, slug } = useParams<{ username: string; slug: string }>();
+export default function BookingPage({ action }: { action?: "cancel" | "reschedule" } = {}) {
+  const { username: paramUsername, slug: paramSlug, bookingId } = useParams<{ username?: string; slug?: string; bookingId?: string }>();
   const navigate = useNavigate();
 
   // Search parameters for deep linking & step routing
@@ -78,9 +100,15 @@ export default function BookingPage() {
   const [errorMsg, setErrorMsg] = useState("");
 
   // Booking Flow States
-  const [step, setStep] = useState<"dateTime" | "form" | "success">("dateTime");
+  const [step, setStep] = useState<"dateTime" | "form" | "success" | "cancel" | "cancelled">("dateTime");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null); // "09:30"
+  
+  const [originalBooking, setOriginalBooking] = useState<any>(null);
+  const [cancelReason, setCancelReason] = useState("");
+
+  const username = paramUsername || host?.username || "";
+  const slug = paramSlug || eventType?.slug || "";
   
   // Month selector calendar state
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -92,6 +120,9 @@ export default function BookingPage() {
   const [customFieldsData, setCustomFieldsData] = useState<Record<string, string>>({});
   const [attendeeTimezone, setAttendeeTimezone] = useState(() => {
     try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tzParam = urlParams.get("timezone");
+      if (tzParam) return tzParam;
       return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
     } catch (e) {
       return "UTC";
@@ -119,26 +150,78 @@ export default function BookingPage() {
         setIsLoading(true);
         setErrorMsg("");
         
-        const res = await axios.get(`http://localhost:5001/api/bookings/public/${username}/${slug}`);
-        setHost(res.data.host);
-        setEventType(res.data.eventType);
+        let fetchedHost: HostDetails;
+        let fetchedEventType: EventType;
+        
+        if (bookingId) {
+          // Public details for reschedule/cancel
+          const res = await axios.get(`http://localhost:5001/api/bookings/${bookingId}/public`);
+          const booking = res.data.booking;
+          setOriginalBooking(booking);
+          
+          fetchedEventType = booking.eventType;
+          fetchedHost = booking.eventType.user;
+          
+          setAttendeeName(booking.attendeeName);
+          setAttendeeEmail(booking.attendeeEmail);
+          setAttendeePhone(booking.attendeePhone || "");
+          
+          // Verify notice windows
+          const now = Date.now();
+          const startMs = new Date(booking.startTime).getTime();
+          if (action === "cancel") {
+            const cancelNotice = fetchedEventType.cancelNotice ?? 60;
+            if (startMs - cancelNotice * 60 * 1000 < now) {
+              const text = cancelNotice % 1440 === 0
+                ? `${cancelNotice / 1440} day(s)`
+                : cancelNotice % 60 === 0
+                  ? `${cancelNotice / 60} hour(s)`
+                  : `${cancelNotice} minute(s)`;
+              throw new Error(`Cancellation policy violation: cancellation is not allowed less than ${text} before start time.`);
+            }
+            if (booking.status === "cancelled") {
+              throw new Error("This booking has already been cancelled.");
+            }
+          }
+          if (action === "reschedule") {
+            const rescheduleNotice = fetchedEventType.rescheduleNotice ?? 60;
+            if (startMs - rescheduleNotice * 60 * 1000 < now) {
+              const text = rescheduleNotice % 1440 === 0
+                ? `${rescheduleNotice / 1440} day(s)`
+                : rescheduleNotice % 60 === 0
+                  ? `${rescheduleNotice / 60} hour(s)`
+                  : `${rescheduleNotice} minute(s)`;
+              throw new Error(`Rescheduling policy violation: rescheduling is not allowed less than ${text} before start time.`);
+            }
+            if (booking.status === "cancelled") {
+              throw new Error("Cannot reschedule a cancelled booking.");
+            }
+          }
+        } else {
+          // Standard booking page
+          if (!paramUsername || !paramSlug) return;
+          const res = await axios.get(`http://localhost:5001/api/bookings/public/${paramUsername}/${paramSlug}`);
+          fetchedHost = res.data.host;
+          fetchedEventType = res.data.eventType;
+          
+          // Load saved form data from localStorage
+          const savedName = localStorage.getItem("cally_attendeeName");
+          const savedEmail = localStorage.getItem("cally_attendeeEmail");
+          const savedPhone = localStorage.getItem("cally_attendeePhone");
+          const savedCustom = localStorage.getItem("cally_customFieldsData");
 
-        // Load saved form data from localStorage
-        const savedName = localStorage.getItem("cally_attendeeName");
-        const savedEmail = localStorage.getItem("cally_attendeeEmail");
-        const savedPhone = localStorage.getItem("cally_attendeePhone");
-        const savedCustom = localStorage.getItem("cally_customFieldsData");
-
-        if (savedName) setAttendeeName(savedName);
-        if (savedEmail) setAttendeeEmail(savedEmail);
-        if (savedPhone) setAttendeePhone(savedPhone);
-        if (savedCustom) {
-          try {
-            setCustomFieldsData(JSON.parse(savedCustom));
-          } catch (e) {
-            console.error("Failed to parse custom fields localStorage data", e);
+          if (savedName) setAttendeeName(savedName);
+          if (savedEmail) setAttendeeEmail(savedEmail);
+          if (savedPhone) setAttendeePhone(savedPhone);
+          if (savedCustom) {
+            try {
+              setCustomFieldsData(JSON.parse(savedCustom));
+            } catch (e) {}
           }
         }
+        
+        setHost(fetchedHost);
+        setEventType(fetchedEventType);
 
         // Auto-select first available date starting from today so calendar and slots are shown at the same time
         if (!dateParam) {
@@ -149,7 +232,7 @@ export default function BookingPage() {
           for (let offset = 0; offset < 30; offset++) {
             const checkDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + offset);
             const weekdayName = checkDate.toLocaleDateString("en-US", { weekday: "long" });
-            const dayConfig = res.data.eventType.availability?.find((a: any) => a.day === weekdayName);
+            const dayConfig = fetchedEventType.availability?.find((a: any) => a.day === weekdayName);
             
             if (dayConfig?.enabled) {
               defaultDate = checkDate;
@@ -165,22 +248,31 @@ export default function BookingPage() {
         }
       } catch (err: any) {
         console.error("Public event details fetch failed:", err);
-        setErrorMsg(err.response?.data?.error || "This booking link seems invalid or expired.");
+        setErrorMsg(err.response?.data?.error || err.message || "This booking link seems invalid or expired.");
       } finally {
         setIsLoading(false);
       }
     }
-    if (username && slug) loadEventData();
-  }, [username, slug]);
+    loadEventData();
+  }, [paramUsername, paramSlug, bookingId, action]);
 
   // Sync step and date/time parameters with browser query strings
   useEffect(() => {
     if (eventType) {
+      if (action === "cancel") {
+        setStep("cancel");
+        return;
+      }
+
+      const successSessionKey = bookingId 
+        ? `booking_success_reschedule_${bookingId}`
+        : `booking_success_${username}_${slug}`;
+
       // If we are back to step 1 (calendar page) and successBooking exists,
       // we clear successBooking so they can select a new date/time slot.
       if (successBooking && (!stepParam || stepParam === "1")) {
         setSuccessBooking(null);
-        sessionStorage.removeItem(`booking_success_${username}_${slug}`);
+        sessionStorage.removeItem(successSessionKey);
         // Let execution flow continue to setup dateTime step
       } else if (successBooking) {
         if (stepParam !== "3" && stepParam !== "success") {
@@ -192,7 +284,7 @@ export default function BookingPage() {
 
       if (stepParam === "3" || stepParam === "success") {
         // Try to load booking success details from sessionStorage on refresh
-        const savedDataStr = sessionStorage.getItem(`booking_success_${username}_${slug}`);
+        const savedDataStr = sessionStorage.getItem(successSessionKey);
         if (savedDataStr) {
           try {
             const savedData = JSON.parse(savedDataStr);
@@ -209,8 +301,11 @@ export default function BookingPage() {
         setStep("success");
       } else if (stepParam === "2" && dateParam && timeParam) {
         // Parse "YYYY-MM-DD" as LOCAL midnight so July 24 stays July 24
-        const [yr, mo, dy] = dateParam.split("-").map(Number);
-        const parsedDate = new Date(yr, (mo ?? 1) - 1, dy ?? 1);
+        const parts = dateParam.split("-");
+        const yr = Number(parts[0]) || new Date().getFullYear();
+        const mo = Number(parts[1]) || 1;
+        const dy = Number(parts[2]) || 1;
+        const parsedDate = new Date(yr, mo - 1, dy);
         setSelectedDate(parsedDate);
         setCurrentMonth(parsedDate);
         setSelectedTime(timeParam);
@@ -242,7 +337,7 @@ export default function BookingPage() {
         }
       }
     }
-  }, [eventType, stepParam, dateParam, timeParam, successBooking, searchParams, setSearchParams, username, slug]);
+  }, [eventType, stepParam, dateParam, timeParam, successBooking, searchParams, setSearchParams, username, slug, action, bookingId]);
 
   // Load booked slots when a date is selected
   useEffect(() => {
@@ -540,6 +635,8 @@ export default function BookingPage() {
           inputBg: "bg-white",
           inputText: "text-gray-800",
           inputPlaceholder: "placeholder:text-gray-400/70",
+          inputBorder: "border-gray-250 hover:border-gray-300",
+          inputFocus: "focus:border-blue-500 focus:ring-2 focus:ring-blue-100",
           dayHover: "hover:bg-gray-50",
           timeSlotBg: "bg-white",
           timeSlotHover: "hover:bg-gray-50 hover:border-gray-300",
@@ -552,7 +649,7 @@ export default function BookingPage() {
           card: "bg-[#18181B] border border-[#27272A] rounded-2xl shadow-2xl",
           accentText: "text-[#7CEFC0]",
           accentBg: "bg-[#7CEFC0] hover:bg-[#58D9A6] text-[#09090B] font-extrabold shadow-[2px_2px_0_rgba(124,239,192,0.15)]",
-          buttonSelected: "bg-[#7CEFC0] text-[#09090B] border-[#7CEFC0] shadow-[2px_2px_0_rgba(124,239,192,0.1)]",
+          buttonSelected: "bg-[#7CEFC0] text-[#09090B] border-[#7CEFC0] shadow-[2px_2px_0_rgba(124,239,192,0.15)]",
           tagBg: "bg-[#27272A] text-[#E4E4E7] border border-[#3F3F46]",
           
           textMain: "text-[#F4F4F5]",
@@ -562,9 +659,11 @@ export default function BookingPage() {
           bgSub: "bg-[#27272A]/40",
           borderMain: "border-[#27272A]",
           borderSub: "border-[#27272A]/60",
-          inputBg: "bg-[#09090B]",
+          inputBg: "bg-[#121214]",
           inputText: "text-[#F4F4F5]",
-          inputPlaceholder: "placeholder:text-[#71717A]/80",
+          inputPlaceholder: "placeholder:text-zinc-500",
+          inputBorder: "border-zinc-800 hover:border-zinc-700",
+          inputFocus: "focus:border-[#7CEFC0] focus:ring-2 focus:ring-[#7CEFC0]/20",
           dayHover: "hover:bg-[#27272A] hover:text-white",
           timeSlotBg: "bg-[#09090B]",
           timeSlotHover: "hover:bg-[#27272A] hover:border-[#3F3F46]",
@@ -590,6 +689,8 @@ export default function BookingPage() {
           inputBg: "bg-white",
           inputText: "text-[#1E2E1F]",
           inputPlaceholder: "placeholder:text-[#3D4F3E]/40",
+          inputBorder: "border-emerald-100 hover:border-emerald-250",
+          inputFocus: "focus:border-emerald-600 focus:ring-2 focus:ring-emerald-50",
           dayHover: "hover:bg-[#F4F7F4]",
           timeSlotBg: "bg-white",
           timeSlotHover: "hover:bg-[#F4F7F4] hover:border-emerald-200",
@@ -616,6 +717,8 @@ export default function BookingPage() {
           inputBg: "bg-white",
           inputText: "text-[#171614]",
           inputPlaceholder: "placeholder:text-[#2B2A27]/35",
+          inputBorder: "border-[#E4E1D4] hover:border-[#171614]/30",
+          inputFocus: "focus:border-[#171614] focus:ring-2 focus:ring-[#171614]/5",
           dayHover: "hover:bg-[#FDFBF2]",
           timeSlotBg: "bg-white",
           timeSlotHover: "hover:bg-[#FDFBF2] hover:border-[#171614]/20",
@@ -657,6 +760,32 @@ export default function BookingPage() {
     const ISOstartTime = new Date(`${dateStr}T${selectedTime}:00Z`).toISOString();
 
     try {
+      if (action === "reschedule") {
+        const res = await axios.post(`http://localhost:5001/api/bookings/${bookingId}/reschedule`, {
+          newStartTime: ISOstartTime,
+        });
+
+        // Clear local storage
+        localStorage.removeItem("cally_attendeeName");
+        localStorage.removeItem("cally_attendeeEmail");
+        localStorage.removeItem("cally_attendeePhone");
+        localStorage.removeItem("cally_customFieldsData");
+
+        const booking = res.data.booking;
+        setSuccessBooking(booking);
+        const successData = {
+          successBooking: booking,
+          selectedTime,
+          attendeeName,
+          attendeeEmail,
+        };
+        sessionStorage.setItem(`booking_success_reschedule_${bookingId}`, JSON.stringify(successData));
+        setSearchParams({ step: "3" }, { replace: true });
+        setStep("success");
+        setIsSubmitting(false);
+        return;
+      }
+
       const res = await axios.post("http://localhost:5001/api/bookings", {
         eventTypeId: eventType.id,
         startTime: ISOstartTime,
@@ -749,6 +878,26 @@ export default function BookingPage() {
     }
   };
 
+  const handleCancelSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    setErrorMsg("");
+
+    try {
+      await axios.post(`http://localhost:5001/api/bookings/${bookingId}/cancel`, {
+        reason: cancelReason,
+      });
+      setStep("cancelled");
+    } catch (err: any) {
+      console.error("Cancellation failed:", err);
+      setErrorMsg(err.response?.data?.error || "Failed to cancel booking.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleCustomFieldChange = (fieldId: string, val: string) => {
     const updated = { ...customFieldsData, [fieldId]: val };
     setCustomFieldsData(updated);
@@ -796,6 +945,18 @@ export default function BookingPage() {
             <h1 className={`font-cal-sans text-xl font-bold uppercase tracking-wider ${theme.textMain}`}>
               {eventType.title}
             </h1>
+            {action === "reschedule" && originalBooking && (
+              <div className="bg-[#B7ACF7]/20 border border-[#B7ACF7]/40 rounded-xl p-3 text-[10px] text-[#171614] font-semibold space-y-1">
+                <span className="font-bold text-[#171614] uppercase tracking-wide block text-xs">Rescheduling meeting</span>
+                <span>Original slot: {new Date(originalBooking.startTime).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}</span>
+              </div>
+            )}
+            {action === "cancel" && originalBooking && (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-[10px] text-red-700 font-semibold space-y-1">
+                <span className="font-bold text-red-800 uppercase tracking-wide block text-xs">Cancelling meeting</span>
+                <span>Scheduled slot: {new Date(originalBooking.startTime).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })}</span>
+              </div>
+            )}
             <div className={clsx('flex', 'items-center', 'gap-2')}>
               <span className={`inline-block text-[10px] font-extrabold px-2 py-0.5 rounded-md ${theme.tagBg}`}>
                 {eventType.price > 0 ? (
@@ -950,7 +1111,7 @@ export default function BookingPage() {
                             <button
                               type="button"
                               onClick={() => handleSelectDateTime(selectedDate, slot)}
-                              className={`w-full py-2.5 text-xs font-bold rounded-xl border transition-all cursor-pointer text-center flex flex-col items-center justify-center ${
+                              className={`w-full py-2 text-xs font-bold rounded-xl border transition-all cursor-pointer text-center flex flex-col items-center justify-center ${
                                 isTimeSelected
                                   ? theme.buttonSelected
                                   : `${theme.timeSlotBg} ${theme.borderMain} ${theme.textMain} ${theme.timeSlotHover} shadow-sm`
@@ -1016,7 +1177,7 @@ export default function BookingPage() {
                             localStorage.setItem("cally_attendeeName", e.target.value);
                           }}
                           placeholder="e.g. Alex Rivera"
-                          className={`w-full px-4 py-2.5 border ${theme.borderMain} rounded-xl text-xs ${theme.inputBg} font-semibold ${theme.inputText} ${theme.inputPlaceholder} focus:outline-none focus:border-[#B7ACF7] transition-all`}
+                          className={`w-full px-4 py-2.5 border ${theme.inputBorder || theme.borderMain} rounded-xl text-xs ${theme.inputBg} font-semibold ${theme.inputText} ${theme.inputPlaceholder} focus:outline-none ${theme.inputFocus || "focus:border-[#B7ACF7]"} transition-all`}
                         />
                       </div>
                     );
@@ -1038,7 +1199,7 @@ export default function BookingPage() {
                             localStorage.setItem("cally_attendeeEmail", e.target.value);
                           }}
                           placeholder="alex@example.com"
-                          className={`w-full px-4 py-2.5 border ${theme.borderMain} rounded-xl text-xs ${theme.inputBg} font-semibold ${theme.inputText} ${theme.inputPlaceholder} focus:outline-none focus:border-[#B7ACF7] transition-all`}
+                          className={`w-full px-4 py-2.5 border ${theme.inputBorder || theme.borderMain} rounded-xl text-xs ${theme.inputBg} font-semibold ${theme.inputText} ${theme.inputPlaceholder} focus:outline-none ${theme.inputFocus || "focus:border-[#B7ACF7]"} transition-all`}
                         />
                       </div>
                     );
@@ -1060,7 +1221,7 @@ export default function BookingPage() {
                             localStorage.setItem("cally_attendeePhone", e.target.value);
                           }}
                           placeholder="e.g. +1 (555) 019-2834"
-                          className={`w-full px-4 py-2.5 border ${theme.borderMain} rounded-xl text-xs ${theme.inputBg} font-semibold ${theme.inputText} ${theme.inputPlaceholder} focus:outline-none focus:border-[#B7ACF7] transition-all`}
+                          className={`w-full px-4 py-2.5 border ${theme.inputBorder || theme.borderMain} rounded-xl text-xs ${theme.inputBg} font-semibold ${theme.inputText} ${theme.inputPlaceholder} focus:outline-none ${theme.inputFocus || "focus:border-[#B7ACF7]"} transition-all`}
                         />
                       </div>
                     );
@@ -1079,7 +1240,7 @@ export default function BookingPage() {
                           value={customFieldsData[field.id] || ""}
                           onChange={(e) => handleCustomFieldChange(field.id, e.target.value)}
                           placeholder="Please share details..."
-                          className={`w-full px-4 py-2.5 border ${theme.borderMain} rounded-xl text-xs ${theme.inputBg} font-semibold ${theme.inputText} ${theme.inputPlaceholder} focus:outline-none focus:border-[#B7ACF7] transition-all`}
+                          className={`w-full px-4 py-2.5 border ${theme.inputBorder || theme.borderMain} rounded-xl text-xs ${theme.inputBg} font-semibold ${theme.inputText} ${theme.inputPlaceholder} focus:outline-none ${theme.inputFocus || "focus:border-[#B7ACF7]"} transition-all`}
                         />
                       </div>
                     );
@@ -1097,7 +1258,7 @@ export default function BookingPage() {
                         value={customFieldsData[field.id] || ""}
                         onChange={(e) => handleCustomFieldChange(field.id, e.target.value)}
                         placeholder="Your answer..."
-                        className={`w-full px-4 py-2.5 border ${theme.borderMain} rounded-xl text-xs ${theme.inputBg} font-semibold ${theme.inputText} ${theme.inputPlaceholder} focus:outline-none focus:border-[#B7ACF7] transition-all`}
+                        className={`w-full px-4 py-2.5 border ${theme.inputBorder || theme.borderMain} rounded-xl text-xs ${theme.inputBg} font-semibold ${theme.inputText} ${theme.inputPlaceholder} focus:outline-none ${theme.inputFocus || "focus:border-[#B7ACF7]"} transition-all`}
                       />
                     </div>
                   );
@@ -1150,7 +1311,7 @@ export default function BookingPage() {
               
               <div className="space-y-2">
                 <h2 className={`font-cal-sans text-xl font-bold uppercase tracking-wider ${theme.textMain}`}>
-                  Booking Confirmed!
+                  {action === "reschedule" ? "Rescheduled Successfully!" : "Booking Confirmed!"}
                 </h2>
                 <p className={`text-sm font-semibold ${theme.textMuted} max-w-sm`}>
                   A calendar invite has been sent to your email. We look forward to meeting you!
@@ -1169,12 +1330,145 @@ export default function BookingPage() {
                 <div>
                   <span className={`text-[10px] font-extrabold uppercase ${theme.textFaded} block`}>Scheduled Time</span>
                   <span>
-                    {new Date(successBooking.startTime).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+                    {new Date(successBooking.startTime).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: "UTC" })}
                     {" @ "}
-                    {formatTimeSlotLabel(selectedTime || "")} (UTC)
+                    {new Date(successBooking.startTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC" })} (UTC)
                   </span>
                 </div>
               </div>
+
+              {/* Show Reschedule / Cancel buttons if configured on the event type */}
+              {!action && (
+                <div className="flex gap-3 w-full max-w-sm pt-2">
+                  {eventType.rescheduleEnabled !== false && (
+                    <Button
+                      onClick={() => navigate(`/booking/${successBooking.id}/reschedule`)}
+                      variant="secondary"
+                      className="flex-1 text-xs"
+                      size="sm"
+                    >
+                      Reschedule
+                    </Button>
+                  )}
+                  {eventType.cancelEnabled !== false && (
+                    <Button
+                      onClick={() => navigate(`/booking/${successBooking.id}/cancel`)}
+                      variant="ghost"
+                      className="flex-1 text-xs border border-[#E5484D] text-[#E5484D] bg-white hover:bg-[#E5484D]/5"
+                      size="sm"
+                    >
+                      Cancel
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* STEP 4: Cancel Meeting Portal */}
+          {step === "cancel" && originalBooking && (
+            <div className={`flex-1 p-6 md:p-10 flex flex-col justify-center items-center text-center space-y-5 ${theme.bgMain}`}>
+              <div className="space-y-2">
+                <h2 className={`font-cal-sans text-xl font-bold uppercase tracking-wider text-[#E5484D]`}>
+                  Cancel Meeting
+                </h2>
+                <p className={`text-sm font-semibold ${theme.textMuted} max-w-sm`}>
+                  Are you sure you want to cancel this meeting?
+                </p>
+              </div>
+
+              <div className={`p-5 border border-red-100 rounded-2xl bg-red-50/20 w-full max-w-sm space-y-3.5 text-xs text-left font-bold ${theme.textMain}`}>
+                <div>
+                  <span className={`text-[10px] font-extrabold uppercase ${theme.textFaded} block`}>Topic</span>
+                  <span>{eventType.title}</span>
+                </div>
+                <div>
+                  <span className={`text-[10px] font-extrabold uppercase ${theme.textFaded} block`}>Guest</span>
+                  <span>{attendeeName} ({attendeeEmail})</span>
+                </div>
+                <div>
+                  <span className={`text-[10px] font-extrabold uppercase ${theme.textFaded} block`}>Scheduled Time</span>
+                  <span>
+                    {new Date(originalBooking.startTime).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: "UTC" })}
+                    {" @ "}
+                    {new Date(originalBooking.startTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC" })} (UTC)
+                  </span>
+                </div>
+              </div>
+
+              {eventType.cancellationPolicy && (
+                <div className="w-full max-w-sm p-4 border border-[#E4E1D4] rounded-2xl bg-[#FDFBF2]/20 text-left space-y-1.5">
+                  <span className="block text-[10px] font-extrabold uppercase text-[#2B2A27]/60">Cancellation Policy</span>
+                  <p className="text-xs text-[#2B2A27]/80 font-medium leading-relaxed">
+                    {eventType.cancellationPolicy}
+                  </p>
+                </div>
+              )}
+
+              <form onSubmit={handleCancelSubmit} className="w-full max-w-sm space-y-4">
+                <div className="space-y-1.5 text-left">
+                  <label className={`block text-xs font-bold ${theme.textMain} uppercase tracking-wider`}>
+                    Reason for cancellation
+                  </label>
+                  <textarea
+                    value={cancelReason}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                    placeholder="e.g. Schedule conflict, will rebook later."
+                    rows={3}
+                    className={`w-full px-4 py-2.5 border ${theme.inputBorder || theme.borderMain} rounded-xl text-xs ${theme.inputBg} font-semibold ${theme.inputText} ${theme.inputPlaceholder} focus:outline-none ${theme.inputFocus || "focus:border-[#B7ACF7]"} transition-all`}
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <Button
+                    type="button"
+                    onClick={() => navigate(`/book/${username}/${slug}`)}
+                    variant="secondary"
+                    className="flex-1 text-xs"
+                    size="sm"
+                  >
+                    Keep Meeting
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="ghost"
+                    disabled={isSubmitting}
+                    className="flex-1 text-xs border border-[#E5484D] bg-[#E5484D] text-white hover:bg-[#E5484D]/90 shadow-[2px_2px_0_rgba(229,72,77,0.15)]"
+                    size="sm"
+                  >
+                    {isSubmitting ? "Cancelling..." : "Confirm Cancellation"}
+                  </Button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {/* STEP 5: Cancellation Success Screen */}
+          {step === "cancelled" && (
+            <div className={`flex-1 p-6 md:p-10 flex flex-col justify-center items-center text-center space-y-5 ${theme.bgMain}`}>
+              <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center border border-red-100">
+                <span className="text-red-500 font-extrabold text-2xl">✓</span>
+              </div>
+              
+              <div className="space-y-2">
+                <h2 className={`font-cal-sans text-xl font-bold uppercase tracking-wider text-red-600`}>
+                  Meeting Cancelled
+                </h2>
+                <p className={`text-sm font-semibold ${theme.textMuted} max-w-sm`}>
+                  This meeting has been cancelled successfully. Confirmation has been sent to your email.
+                </p>
+              </div>
+
+              {eventType && (
+                <Button
+                  onClick={() => navigate(`/book/${username}/${slug}`)}
+                  variant="primary"
+                  size="sm"
+                  rounded="xl"
+                >
+                  Book another meeting
+                </Button>
+              )}
             </div>
           )}
 

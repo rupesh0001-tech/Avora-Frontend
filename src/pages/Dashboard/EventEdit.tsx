@@ -14,8 +14,9 @@ import { AppearanceTab } from "./components/EventEdit/AppearanceTab";
 import { BookingsTab } from "./components/EventEdit/BookingsTab";
 import { PaymentsTab } from "./components/EventEdit/PaymentsTab";
 import { LimitsTab } from "./components/EventEdit/LimitsTab";
+import { RescheduleCancelTab } from "./components/EventEdit/RescheduleCancelTab";
 
-interface EventType {
+export interface EventType {
   id: string;
   title: string;
   slug: string;
@@ -27,7 +28,43 @@ interface EventType {
   availability: Array<{ day: string; enabled: boolean; slots: Array<{ startTime: string; endTime: string }> }>;
   bookingFields: Array<{ id: string; label: string; type: string; status: "Hidden" | "Optional" | "Required"; editable: boolean }>;
   appearance: string;
+  rescheduleEnabled: boolean;
+  cancelEnabled: boolean;
+  rescheduleNotice: number;
+  cancelNotice: number;
+  cancellationPolicy: string;
+  paymentEnabled?: boolean;
+  currency?: string;
+  seatsEnabled?: boolean;
+  seatsMax?: number;
+  seatsShareInfo?: boolean;
+  seatsShowCount?: boolean;
+  beforeBuffer?: number;
+  afterBuffer?: number;
+  minimumNotice?: number;
+  slotInterval?: number | null;
+  limitBookingFrequency?: any;
+  limitTotalBookingDuration?: any;
+  limitFutureBookings?: any;
+  limitUpcomingBookings?: any;
+  showOnlyFirstAvailableSlot?: boolean;
 }
+
+const TIMEZONE_OPTIONS = [
+  { value: "UTC", label: "UTC (GMT+0)" },
+  { value: "Asia/Kolkata", label: "Kolkata (GMT+5:30)" },
+  { value: "America/New_York", label: "New York (GMT-4)" },
+  { value: "America/Los_Angeles", label: "Los Angeles (GMT-7)" },
+  { value: "America/Chicago", label: "Chicago (GMT-5)" },
+  { value: "America/Denver", label: "Denver (GMT-6)" },
+  { value: "Europe/London", label: "London (GMT+1)" },
+  { value: "Europe/Paris", label: "Paris (GMT+2)" },
+  { value: "Europe/Berlin", label: "Berlin (GMT+2)" },
+  { value: "Asia/Tokyo", label: "Tokyo (GMT+9)" },
+  { value: "Asia/Singapore", label: "Singapore (GMT+8)" },
+  { value: "Asia/Dubai", label: "Dubai (GMT+4)" },
+  { value: "Australia/Sydney", label: "Sydney (GMT+10)" },
+];
 
 // Helper to generate 30-min time interval options
 const TIME_OPTIONS = (() => {
@@ -72,6 +109,7 @@ export function EventEditPage() {
 
   // Availability State
   const [availability, setAvailability] = useState<EventType["availability"]>([]);
+  const [userTimezone, setUserTimezone] = useState("UTC");
   // Track open time-slot picker overlay
   const [activeDropdown, setActiveDropdown] = useState<{ dayIdx: number; slotIdx: number; type: "start" | "end" } | null>(null);
 
@@ -98,6 +136,13 @@ export function EventEditPage() {
   const [seatsShareInfo, setSeatsShareInfo] = useState(false);
   const [seatsShowCount, setSeatsShowCount] = useState(false);
 
+  // Reschedule & Cancel State
+  const [rescheduleEnabled, setRescheduleEnabled] = useState(true);
+  const [cancelEnabled, setCancelEnabled] = useState(true);
+  const [rescheduleNotice, setRescheduleNotice] = useState(60);
+  const [cancelNotice, setCancelNotice] = useState(60);
+  const [cancellationPolicy, setCancellationPolicy] = useState("");
+
   // Limits & Buffers State
   const [beforeBuffer, setBeforeBuffer] = useState(0);
   const [afterBuffer, setAfterBuffer] = useState(0);
@@ -116,6 +161,7 @@ export function EventEditPage() {
         // Load User info
         const meRes = await api.get("/auth/me");
         setUsername(meRes.data.user?.username || "user");
+        setUserTimezone(meRes.data.user?.timezone || "UTC");
 
         // Load Event Details
         const eventRes = await api.get(`/events/${id}`);
@@ -140,6 +186,12 @@ export function EventEditPage() {
         setSeatsMax(ev.seatsMax || 1);
         setSeatsShareInfo(ev.seatsShareInfo || false);
         setSeatsShowCount(ev.seatsShowCount || false);
+
+        setRescheduleEnabled(ev.rescheduleEnabled !== false);
+        setCancelEnabled(ev.cancelEnabled !== false);
+        setRescheduleNotice(ev.rescheduleNotice ?? 60);
+        setCancelNotice(ev.cancelNotice ?? 60);
+        setCancellationPolicy(ev.cancellationPolicy || "");
 
         setBeforeBuffer(ev.beforeBuffer || 0);
         setAfterBuffer(ev.afterBuffer || 0);
@@ -180,7 +232,25 @@ export function EventEditPage() {
   };
 
   const handleSaveAvailability = async () => {
-    await handleUpdate({ availability });
+    if (isSaving) return;
+    setIsSaving(true);
+    setMessage(null);
+    try {
+      // Save event availability
+      const eventRes = await api.put(`/events/${id}`, { availability });
+      setEvent(eventRes.data.event);
+
+      // Save user timezone
+      await api.put("/users/availability", { availability, timezone: userTimezone });
+
+      setMessage({ type: "success", text: "Availability saved successfully! ✓" });
+      setTimeout(() => setMessage(null), 3000);
+    } catch (err: any) {
+      console.error("Error saving availability:", err);
+      setMessage({ type: "error", text: err.response?.data?.error || "Failed to save availability." });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleSaveBookingForm = async () => {
@@ -201,6 +271,16 @@ export function EventEditPage() {
       seatsMax: Number(seatsMax),
       seatsShareInfo,
       seatsShowCount,
+    });
+  };
+
+  const handleSaveReschedule = async () => {
+    await handleUpdate({
+      rescheduleEnabled,
+      cancelEnabled,
+      rescheduleNotice: Number(rescheduleNotice),
+      cancelNotice: Number(cancelNotice),
+      cancellationPolicy,
     });
   };
 
@@ -312,7 +392,7 @@ export function EventEditPage() {
     );
   }
 
-  const sidebarTabs = [
+  const sidebarTabs: Array<{ id: string; name: string; icon: any; comingSoon?: boolean }> = [
     { id: "basics", name: "Basics", icon: Clock },
     { id: "availability", name: "Availability", icon: Calendar },
     { id: "bookingForm", name: "Booking Form", icon: MessageSquare },
@@ -321,8 +401,7 @@ export function EventEditPage() {
     { id: "analytics", name: "Analytics", icon: BarChart3 },
     { id: "payments", name: "Payment & Seats", icon: Shield },
     { id: "limits", name: "Limits & Buffers", icon: Clock },
-    { id: "reschedule", name: "Reschedule & Cancel", icon: Clock, comingSoon: true },
-    { id: "webhooks", name: "Webhooks", icon: HelpCircle, comingSoon: true },
+    { id: "reschedule", name: "Reschedule & Cancel", icon: Clock },
   ];
 
   return (
@@ -428,6 +507,9 @@ export function EventEditPage() {
               isSaving={isSaving}
               formatTime24to12={formatTime24to12}
               timeOptions={TIME_OPTIONS}
+              timezone={userTimezone}
+              onTimezoneChange={setUserTimezone}
+              timezoneOptions={TIMEZONE_OPTIONS}
             />
           )}
 
@@ -523,15 +605,22 @@ export function EventEditPage() {
             />
           )}
 
-          {/* DUMMY/COMING SOON PANELS */}
-          {["reschedule", "webhooks"].includes(activeTab) && (
-            <div className={clsx('bg-white', 'border', 'border-[#E4E1D4]', 'rounded-2xl', 'p-12', 'text-center', 'shadow-[3px_3px_0_rgba(23,22,20,0.08)]', 'space-y-4')}>
-              <Sparkles className={clsx('w-12', 'h-12', 'text-[#171614]', 'mx-auto', 'opacity-75')} />
-              <h3 className={clsx('font-cal-sans', 'text-xl', 'font-bold', 'uppercase', 'tracking-wider', 'text-[#171614]')}>Coming Soon!</h3>
-              <p className={clsx('text-[#2B2A27]/70', 'text-sm', 'max-w-sm', 'mx-auto', 'font-semibold')}>
-                We are building the rest of the layout configurations very soon. Stay tuned!
-              </p>
-            </div>
+          {/* RESCHEDULE PANEL */}
+          {activeTab === "reschedule" && (
+            <RescheduleCancelTab
+              rescheduleEnabled={rescheduleEnabled}
+              setRescheduleEnabled={setRescheduleEnabled}
+              cancelEnabled={cancelEnabled}
+              setCancelEnabled={setCancelEnabled}
+              rescheduleNotice={rescheduleNotice}
+              setRescheduleNotice={setRescheduleNotice}
+              cancelNotice={cancelNotice}
+              setCancelNotice={setCancelNotice}
+              cancellationPolicy={cancellationPolicy}
+              setCancellationPolicy={setCancellationPolicy}
+              isSaving={isSaving}
+              onSave={handleSaveReschedule}
+            />
           )}
 
         </main>

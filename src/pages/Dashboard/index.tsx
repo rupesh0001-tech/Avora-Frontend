@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useOutletContext, Link } from "react-router-dom";
-import { EventType, EventTypeCard } from "./components/EventTypeCard";
+import { EventTypeCard } from "./components/EventTypeCard";
+import type { EventType } from "./components/EventTypeCard";
 import { EmptyState } from "./components/EmptyState";
 import { useApi } from "../../lib/api";
 import { LayoutGrid, List, Grid, Clock, Video, MapPin, Edit3, Eye, Copy, Check } from "lucide-react";

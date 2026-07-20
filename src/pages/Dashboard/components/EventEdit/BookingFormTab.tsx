@@ -2,7 +2,7 @@ import React from "react";
 import { Plus, Edit2, Trash2, Check, Save } from "lucide-react";
 import { Button } from "../../../../components/ui/Button";
 import { Select } from "../../../../components/ui/Select";
-import { EventType } from "../../EventEdit";
+import type { EventType } from "../../EventEdit";
 
 interface BookingFormTabProps {
   bookingFields: EventType["bookingFields"];

@@ -160,6 +160,8 @@ export default function DemoPreviewPage() {
           inputBg: "bg-white",
           inputText: "text-gray-800",
           inputPlaceholder: "placeholder:text-gray-400/70",
+          inputBorder: "border-gray-250 hover:border-gray-300",
+          inputFocus: "focus:border-blue-500 focus:ring-2 focus:ring-blue-100",
           dayHover: "hover:bg-gray-50",
           timeSlotBg: "bg-white",
           timeSlotHover: "hover:bg-gray-50 hover:border-gray-300",
@@ -172,7 +174,7 @@ export default function DemoPreviewPage() {
           card: "bg-[#18181B] border border-[#27272A] rounded-2xl shadow-2xl",
           accentText: "text-[#7CEFC0]",
           accentBg: "bg-[#7CEFC0] hover:bg-[#58D9A6] text-[#09090B] font-extrabold shadow-[2px_2px_0_rgba(124,239,192,0.15)]",
-          buttonSelected: "bg-[#7CEFC0] text-[#09090B] border-[#7CEFC0] shadow-[2px_2px_0_rgba(124,239,192,0.1)]",
+          buttonSelected: "bg-[#7CEFC0] text-[#09090B] border-[#7CEFC0] shadow-[2px_2px_0_rgba(124,239,192,0.15)]",
           tagBg: "bg-[#27272A] text-[#E4E4E7] border border-[#3F3F46]",
           
           textMain: "text-[#F4F4F5]",
@@ -182,9 +184,11 @@ export default function DemoPreviewPage() {
           bgSub: "bg-[#27272A]/40",
           borderMain: "border-[#27272A]",
           borderSub: "border-[#27272A]/60",
-          inputBg: "bg-[#09090B]",
+          inputBg: "bg-[#121214]",
           inputText: "text-[#F4F4F5]",
-          inputPlaceholder: "placeholder:text-[#71717A]/80",
+          inputPlaceholder: "placeholder:text-zinc-500",
+          inputBorder: "border-zinc-800 hover:border-zinc-700",
+          inputFocus: "focus:border-[#7CEFC0] focus:ring-2 focus:ring-[#7CEFC0]/20",
           dayHover: "hover:bg-[#27272A] hover:text-white",
           timeSlotBg: "bg-[#09090B]",
           timeSlotHover: "hover:bg-[#27272A] hover:border-[#3F3F46]",
@@ -210,6 +214,8 @@ export default function DemoPreviewPage() {
           inputBg: "bg-white",
           inputText: "text-[#1E2E1F]",
           inputPlaceholder: "placeholder:text-[#3D4F3E]/40",
+          inputBorder: "border-emerald-100 hover:border-emerald-250",
+          inputFocus: "focus:border-emerald-600 focus:ring-2 focus:ring-emerald-50",
           dayHover: "hover:bg-[#F4F7F4]",
           timeSlotBg: "bg-white",
           timeSlotHover: "hover:bg-[#F4F7F4] hover:border-emerald-200",
@@ -236,6 +242,8 @@ export default function DemoPreviewPage() {
           inputBg: "bg-white",
           inputText: "text-[#171614]",
           inputPlaceholder: "placeholder:text-[#2B2A27]/35",
+          inputBorder: "border-[#E4E1D4] hover:border-[#171614]/30",
+          inputFocus: "focus:border-[#171614] focus:ring-2 focus:ring-[#171614]/5",
           dayHover: "hover:bg-[#FDFBF2]",
           timeSlotBg: "bg-white",
           timeSlotHover: "hover:bg-[#FDFBF2] hover:border-[#171614]/20",
@@ -269,30 +277,44 @@ export default function DemoPreviewPage() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Premium Controls Sticky Header */}
-      <header className="sticky top-0 z-50 h-16 bg-white border-b border-[#E4E1D4] px-6 flex items-center justify-between shadow-[0_2px_4px_rgba(0,0,0,0.02)] select-none">
+      <header className={`sticky top-0 z-50 h-16 border-b px-6 flex items-center justify-between transition-all duration-300 select-none ${
+        activeTheme === "dark"
+          ? "bg-[#09090B] border-zinc-800 shadow-[0_4px_20px_rgba(0,0,0,0.4)]"
+          : "bg-white border-[#E4E1D4] shadow-[0_2px_4px_rgba(0,0,0,0.02)]"
+      }`}>
         
         {/* Back button */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate(returnTo)}
-            className="p-2 border border-[#E4E1D4] hover:border-[#171614] hover:bg-[#FDFBF2] rounded-xl transition-all cursor-pointer flex items-center gap-1.5 text-xs font-bold text-[#171614]"
+            className={`p-2 border rounded-xl transition-all cursor-pointer flex items-center gap-1.5 text-xs font-bold ${
+              activeTheme === "dark"
+                ? "border-zinc-800 hover:border-zinc-750 bg-zinc-900/50 hover:bg-zinc-800 text-zinc-300"
+                : "border-[#E4E1D4] hover:border-[#171614] hover:bg-[#FDFBF2] text-[#171614]"
+            }`}
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             Exit Preview
           </button>
-          <div className="h-6 w-[1px] bg-[#E4E1D4]"></div>
+          <div className={`h-6 w-[1px] ${activeTheme === "dark" ? "bg-zinc-800" : "bg-[#E4E1D4]"}`}></div>
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#171614]" />
-            <span className="text-xs font-black uppercase tracking-wider text-[#171614]">Live Layout Sandbox</span>
+            <Sparkles className={`w-4 h-4 ${activeTheme === "dark" ? "text-zinc-400" : "text-[#171614]"}`} />
+            <span className={`text-xs font-black uppercase tracking-wider ${activeTheme === "dark" ? "text-zinc-200" : "text-[#171614]"}`}>Live Layout Sandbox</span>
           </div>
         </div>
 
         {/* Live Theme Swapper */}
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-extrabold uppercase tracking-wide text-[#2B2A27]/55 mr-2 hidden md:inline">
+          <span className={`text-[10px] font-extrabold uppercase tracking-wide mr-2 hidden md:inline ${
+            activeTheme === "dark" ? "text-zinc-400" : "text-[#2B2A27]/55"
+          }`}>
             Active Layout Design:
           </span>
-          <div className="flex bg-[#F4F2E6] border border-[#E4E1D4] p-1 rounded-xl gap-1">
+          <div className={`flex border p-1 rounded-xl gap-1 ${
+            activeTheme === "dark"
+              ? "bg-zinc-950 border-zinc-800"
+              : "bg-[#F4F2E6] border-[#E4E1D4]"
+          }`}>
             {[
               { id: "classic", name: "Classic" },
               { id: "minimal", name: "Minimal" },
@@ -306,7 +328,11 @@ export default function DemoPreviewPage() {
                   onClick={() => handleThemeChange(t.id)}
                   className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     active
-                      ? "bg-white border border-[#171614]/10 text-[#171614] shadow-[1px_1px_2px_rgba(0,0,0,0.05)]"
+                      ? activeTheme === "dark"
+                        ? "bg-zinc-800 text-white shadow-[0_1px_3px_rgba(0,0,0,0.3)]"
+                        : "bg-white border border-[#171614]/10 text-[#171614] shadow-[1px_1px_2px_rgba(0,0,0,0.05)]"
+                      : activeTheme === "dark"
+                      ? "text-zinc-400 hover:text-white"
                       : "text-[#2B2A27]/70 hover:text-[#171614]"
                   }`}
                 >
@@ -528,7 +554,7 @@ export default function DemoPreviewPage() {
                             value={attendeeName}
                             onChange={(e) => setAttendeeName(e.target.value)}
                             placeholder="e.g. Alex Rivera"
-                            className={`w-full px-4 py-2.5 border ${theme.borderMain} rounded-xl text-xs ${theme.inputBg} font-semibold ${theme.inputText} ${theme.inputPlaceholder} focus:outline-none focus:border-[#B7ACF7] transition-all`}
+                            className={`w-full px-4 py-2.5 border ${theme.inputBorder || theme.borderMain} rounded-xl text-xs ${theme.inputBg} font-semibold ${theme.inputText} ${theme.inputPlaceholder} focus:outline-none ${theme.inputFocus || "focus:border-[#B7ACF7]"} transition-all`}
                           />
                         </div>
                       );
@@ -546,7 +572,7 @@ export default function DemoPreviewPage() {
                             value={attendeeEmail}
                             onChange={(e) => setAttendeeEmail(e.target.value)}
                             placeholder="alex@example.com"
-                            className={`w-full px-4 py-2.5 border ${theme.borderMain} rounded-xl text-xs ${theme.inputBg} font-semibold ${theme.inputText} ${theme.inputPlaceholder} focus:outline-none focus:border-[#B7ACF7] transition-all`}
+                            className={`w-full px-4 py-2.5 border ${theme.inputBorder || theme.borderMain} rounded-xl text-xs ${theme.inputBg} font-semibold ${theme.inputText} ${theme.inputPlaceholder} focus:outline-none ${theme.inputFocus || "focus:border-[#B7ACF7]"} transition-all`}
                           />
                         </div>
                       );
@@ -564,7 +590,7 @@ export default function DemoPreviewPage() {
                             value={attendeePhone}
                             onChange={(e) => setAttendeePhone(e.target.value)}
                             placeholder="e.g. +1 (555) 019-2834"
-                            className={`w-full px-4 py-2.5 border ${theme.borderMain} rounded-xl text-xs ${theme.inputBg} font-semibold ${theme.inputText} ${theme.inputPlaceholder} focus:outline-none focus:border-[#B7ACF7] transition-all`}
+                            className={`w-full px-4 py-2.5 border ${theme.inputBorder || theme.borderMain} rounded-xl text-xs ${theme.inputBg} font-semibold ${theme.inputText} ${theme.inputPlaceholder} focus:outline-none ${theme.inputFocus || "focus:border-[#B7ACF7]"} transition-all`}
                           />
                         </div>
                       );
@@ -582,7 +608,7 @@ export default function DemoPreviewPage() {
                             value={customGoal}
                             onChange={(e) => setCustomGoal(e.target.value)}
                             placeholder="Please share details..."
-                            className={`w-full px-4 py-2.5 border ${theme.borderMain} rounded-xl text-xs ${theme.inputBg} font-semibold ${theme.inputText} ${theme.inputPlaceholder} focus:outline-none focus:border-[#B7ACF7] transition-all`}
+                            className={`w-full px-4 py-2.5 border ${theme.inputBorder || theme.borderMain} rounded-xl text-xs ${theme.inputBg} font-semibold ${theme.inputText} ${theme.inputPlaceholder} focus:outline-none ${theme.inputFocus || "focus:border-[#B7ACF7]"} transition-all`}
                           />
                         </div>
                       );

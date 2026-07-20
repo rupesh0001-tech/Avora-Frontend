@@ -27,9 +27,9 @@ export function AppearanceTab({ appearance, onSave, eventTypeId }: AppearanceTab
         {/* Classic Neo-brutalist */}
         <div
           onClick={() => onSave("classic")}
-          className={`border rounded-2xl p-5 text-left transition-all cursor-pointer flex flex-col justify-between ${
+          className={`border rounded-2xl p-5 text-left transition-all duration-200 cursor-pointer flex flex-col justify-between hover:scale-[1.01] ${
             appearance === "classic"
-              ? "bg-[#F3E75B]/10 border-[#171614] shadow-[3px_3px_0_rgba(23,22,20,1)]"
+              ? "bg-[#F3E75B]/10 border-[#171614] border-2 shadow-[3px_3px_0_rgba(23,22,20,1)]"
               : "bg-white hover:bg-[#FDFBF2] border-[#E4E1D4] shadow-[2px_2px_0_rgba(23,22,20,0.04)]"
           }`}
         >
@@ -38,18 +38,9 @@ export function AppearanceTab({ appearance, onSave, eventTypeId }: AppearanceTab
               <span className="font-bold text-sm text-[#171614]">Neo-Brutalist Classic</span>
               {appearance === "classic" && <Check className="w-4 h-4 text-[#171614] stroke-[3]" />}
             </div>
-            <p className="text-[11px] text-[#2B2A27]/70 font-semibold">Thick black borders, high contrast palettes, and heavy retro shadow effects.</p>
-            
-            {/* Visual Mini Mockup */}
-            <div className="mt-3.5 h-16 w-full border border-[#171614] rounded-md bg-white shadow-[2px_2px_0_rgba(23,22,20,1)] p-2 flex flex-col justify-between select-none">
-              <div className="flex gap-1.5">
-                <div className="w-8 h-2.5 bg-[#7CEFC0] border border-[#171614] rounded-[3px]"></div>
-                <div className="w-12 h-2.5 bg-gray-150 border border-[#171614] rounded-[3px]"></div>
-              </div>
-              <div className="h-4 w-full bg-[#F3E75B]/40 border border-[#171614] rounded-[3px] flex items-center justify-center text-[7px] font-black uppercase text-[#171614] tracking-wider">
-                Select Slot
-              </div>
-            </div>
+            <p className="text-[11px] text-[#2B2A27]/70 font-semibold leading-relaxed">
+              Thick black borders, high contrast palettes, and heavy retro shadow effects.
+            </p>
           </div>
 
           <div className="mt-4 pt-3 border-t border-[#E4E1D4]/40 flex justify-between items-center">
@@ -70,9 +61,9 @@ export function AppearanceTab({ appearance, onSave, eventTypeId }: AppearanceTab
         {/* Minimalist Modern */}
         <div
           onClick={() => onSave("minimal")}
-          className={`border rounded-2xl p-5 text-left transition-all cursor-pointer flex flex-col justify-between ${
+          className={`border rounded-2xl p-5 text-left transition-all duration-200 cursor-pointer flex flex-col justify-between hover:scale-[1.01] ${
             appearance === "minimal"
-              ? "bg-blue-50/20 border-blue-500 shadow-[3px_3px_0_rgba(59,130,246,0.15)]"
+              ? "bg-blue-50/20 border-blue-500 border-2 shadow-[3px_3px_0_rgba(59,130,246,0.15)]"
               : "bg-white hover:bg-[#FDFBF2] border-[#E4E1D4] shadow-[2px_2px_0_rgba(23,22,20,0.04)]"
           }`}
         >
@@ -81,18 +72,9 @@ export function AppearanceTab({ appearance, onSave, eventTypeId }: AppearanceTab
               <span className="font-bold text-sm text-gray-900">Modern Minimalist</span>
               {appearance === "minimal" && <Check className="w-4 h-4 text-blue-600 stroke-[3]" />}
             </div>
-            <p className="text-[11px] text-[#2B2A27]/70 font-semibold">Subtle grey margins, warm typography, and no block shadows. Pure elegance.</p>
-            
-            {/* Visual Mini Mockup */}
-            <div className="mt-3.5 h-16 w-full border border-gray-200 rounded-md bg-white p-2 flex flex-col justify-between shadow-sm select-none">
-              <div className="flex gap-1.5">
-                <div className="w-8 h-2.5 bg-blue-600 rounded-[3px]"></div>
-                <div className="w-12 h-2.5 bg-gray-100 rounded-[3px]"></div>
-              </div>
-              <div className="h-4 w-full bg-blue-50 text-blue-700 rounded-[3px] border border-blue-100 flex items-center justify-center text-[7px] font-bold">
-                Next Step
-              </div>
-            </div>
+            <p className="text-[11px] text-[#2B2A27]/70 font-semibold leading-relaxed">
+              Subtle grey margins, warm typography, and no block shadows. Pure elegance.
+            </p>
           </div>
 
           <div className="mt-4 pt-3 border-t border-[#E4E1D4]/40 flex justify-between items-center">
@@ -113,9 +95,9 @@ export function AppearanceTab({ appearance, onSave, eventTypeId }: AppearanceTab
         {/* Dark Mode Glass */}
         <div
           onClick={() => onSave("dark")}
-          className={`border rounded-2xl p-5 text-left transition-all cursor-pointer flex flex-col justify-between ${
+          className={`border rounded-2xl p-5 text-left transition-all duration-200 cursor-pointer flex flex-col justify-between hover:scale-[1.01] ${
             appearance === "dark"
-              ? "bg-emerald-950/15 border-emerald-500 shadow-[3px_3px_0_rgba(16,185,129,0.15)]"
+              ? "bg-emerald-950/15 border-emerald-500 border-2 shadow-[3px_3px_0_rgba(16,185,129,0.15)]"
               : "bg-white hover:bg-[#FDFBF2] border-[#E4E1D4] shadow-[2px_2px_0_rgba(23,22,20,0.04)]"
           }`}
         >
@@ -124,18 +106,9 @@ export function AppearanceTab({ appearance, onSave, eventTypeId }: AppearanceTab
               <span className="font-bold text-sm text-[#171614]">Dark Mode Glass</span>
               {appearance === "dark" && <Check className="w-4 h-4 text-emerald-600 stroke-[3]" />}
             </div>
-            <p className="text-[11px] text-[#2B2A27]/70 font-semibold">Translucent dark layout panels, glow effects, and modern workspace gradients.</p>
-            
-            {/* Visual Mini Mockup */}
-            <div className="mt-3.5 h-16 w-full border border-[#27272A] rounded-md bg-[#18181B] p-2 flex flex-col justify-between select-none">
-              <div className="flex gap-1.5">
-                <div className="w-8 h-2.5 bg-[#7CEFC0]/20 border border-[#7CEFC0]/50 rounded-[3px]"></div>
-                <div className="w-12 h-2.5 bg-[#27272A] rounded-[3px]"></div>
-              </div>
-              <div className="h-4 w-full bg-[#7CEFC0] text-[#09090B] rounded-[3px] flex items-center justify-center text-[7px] font-black uppercase tracking-wider">
-                Confirm
-              </div>
-            </div>
+            <p className="text-[11px] text-[#2B2A27]/70 font-semibold leading-relaxed">
+              Translucent dark layout panels, glow effects, and modern workspace gradients.
+            </p>
           </div>
 
           <div className="mt-4 pt-3 border-t border-[#E4E1D4]/40 flex justify-between items-center">
@@ -156,9 +129,9 @@ export function AppearanceTab({ appearance, onSave, eventTypeId }: AppearanceTab
         {/* Sage Cozy */}
         <div
           onClick={() => onSave("sage")}
-          className={`border rounded-2xl p-5 text-left transition-all cursor-pointer flex flex-col justify-between ${
+          className={`border rounded-2xl p-5 text-left transition-all duration-200 cursor-pointer flex flex-col justify-between hover:scale-[1.01] ${
             appearance === "sage"
-              ? "bg-emerald-50/40 border-emerald-600 shadow-[3px_3px_0_rgba(4,120,87,0.15)]"
+              ? "bg-emerald-50/40 border-emerald-600 border-2 shadow-[3px_3px_0_rgba(4,120,87,0.15)]"
               : "bg-white hover:bg-[#FDFBF2] border-[#E4E1D4] shadow-[2px_2px_0_rgba(23,22,20,0.04)]"
           }`}
         >
@@ -167,18 +140,9 @@ export function AppearanceTab({ appearance, onSave, eventTypeId }: AppearanceTab
               <span className="font-bold text-sm text-[#1E2E1F]">Cozy Sage</span>
               {appearance === "sage" && <Check className="w-4 h-4 text-emerald-800 stroke-[3]" />}
             </div>
-            <p className="text-[11px] text-[#2B2A27]/70 font-semibold">Soft sage green outlines, organic rounded corners, and pastel background colors.</p>
-            
-            {/* Visual Mini Mockup */}
-            <div className="mt-3.5 h-16 w-full border border-[#E1EDE1] rounded-md bg-white p-2 flex flex-col justify-between shadow-sm select-none">
-              <div className="flex gap-1.5">
-                <div className="w-8 h-2.5 bg-emerald-700 rounded-[3px]"></div>
-                <div className="w-12 h-2.5 bg-[#F4F7F4] rounded-[3px]"></div>
-              </div>
-              <div className="h-4 w-full bg-emerald-50 text-emerald-800 rounded-[3px] border border-emerald-100 flex items-center justify-center text-[7px] font-bold">
-                Select
-              </div>
-            </div>
+            <p className="text-[11px] text-[#2B2A27]/70 font-semibold leading-relaxed">
+              Soft sage green outlines, organic rounded corners, and pastel background colors.
+            </p>
           </div>
 
           <div className="mt-4 pt-3 border-t border-[#E4E1D4]/40 flex justify-between items-center">

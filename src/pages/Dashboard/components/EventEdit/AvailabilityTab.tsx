@@ -1,7 +1,8 @@
 import React from "react";
-import { Save, ChevronDown } from "lucide-react";
+import { Save, ChevronDown, Globe } from "lucide-react";
 import { Button } from "../../../../components/ui/Button";
-import { EventType } from "../../EventEdit";
+import { Select } from "../../../../components/ui/Select";
+import type { EventType } from "../../EventEdit";
 
 interface AvailabilityTabProps {
   availability: EventType["availability"];
@@ -13,6 +14,9 @@ interface AvailabilityTabProps {
   isSaving: boolean;
   formatTime24to12: (time24: string) => string;
   timeOptions: Array<{ val: string; label: string }>;
+  timezone: string;
+  onTimezoneChange: (tz: string) => void;
+  timezoneOptions: Array<{ value: string; label: string }>;
 }
 
 export function AvailabilityTab({
@@ -25,12 +29,30 @@ export function AvailabilityTab({
   isSaving,
   formatTime24to12,
   timeOptions,
+  timezone,
+  onTimezoneChange,
+  timezoneOptions,
 }: AvailabilityTabProps) {
   return (
     <div className="bg-white border border-[#E4E1D4] rounded-2xl p-8 shadow-[3px_3px_0_rgba(23,22,20,0.08)] space-y-6">
-      <div>
-        <h3 className="font-cal-sans text-xl font-bold uppercase tracking-wider text-[#171614]">Availability</h3>
-        <p className="text-xs text-[#2B2A27]/60 font-semibold mt-1">Select days and time slots when you're open for bookings.</p>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4 border-b border-[#E4E1D4]/60">
+        <div>
+          <h3 className="font-cal-sans text-xl font-bold uppercase tracking-wider text-[#171614]">Availability</h3>
+          <p className="text-xs text-[#2B2A27]/60 font-semibold mt-1">Select days and time slots when you're open for bookings.</p>
+        </div>
+
+        {/* Compact Timezone Selector */}
+        <div className="flex items-center gap-2 text-xs font-bold text-[#2B2A27]/70 shrink-0">
+          <Globe className="w-4 h-4 text-[#171614]" />
+          <span>Timezone:</span>
+          <Select
+            value={timezone}
+            onChange={onTimezoneChange}
+            options={timezoneOptions}
+            className="w-48"
+            buttonClassName="w-full px-4 py-2 border border-[#E4E1D4] rounded-lg bg-white font-semibold text-[#171614] text-xs text-left flex justify-between items-center hover:bg-[#FDFBF2] transition-all cursor-pointer shadow-sm"
+          />
+        </div>
       </div>
 
       <div className="space-y-4">
