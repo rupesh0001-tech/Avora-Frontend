@@ -28,10 +28,6 @@ export function HeroPhone() {
           />
         </div>
 
-        {/* Home indicator */}
-        <div className="flex justify-center py-2 bg-white">
-          <div className="w-10 h-[3px] rounded-full bg-[#1c1b19]/20" />
-        </div>
       </div>
 
       {/* Ground shadow */}

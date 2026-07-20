@@ -57,7 +57,7 @@ export function Hero() {
         </div>
       </div>
 
-      <div className="max-w-[1100px] mx-auto px-4 md:px-8 mt-10">
+      <div className="hidden md:block max-w-[1100px] mx-auto px-4 md:px-8 mt-10">
         <div className="flex items-end justify-center gap-4 md:gap-8">
           {/* Laptop — 76% width */}
           <div className="w-[76%] shrink-0">
