@@ -181,8 +181,8 @@ export default function AvailabilityPage() {
 
         <div className="space-y-4">
           {availability.map((dayConfig, dayIdx) => (
-            <div key={dayConfig.day} className="flex items-center gap-4 py-3 border-b border-[#E4E1D4]/60 last:border-b-0">
-              <label className="flex items-center gap-3 w-32 cursor-pointer select-none">
+            <div key={dayConfig.day} className="flex flex-col sm:flex-row sm:items-center gap-4 py-4 border-b border-[#E4E1D4]/60 last:border-b-0">
+              <label className="flex items-center gap-3 w-full sm:w-32 cursor-pointer select-none shrink-0">
                 <input
                   type="checkbox"
                   checked={dayConfig.enabled}
@@ -193,13 +193,13 @@ export default function AvailabilityPage() {
               </label>
 
               {dayConfig.enabled ? (
-                <div className="flex-1 flex items-center gap-2">
+                <div className="flex-1 flex flex-col gap-3 w-full">
                   {dayConfig.slots.map((slot, slotIdx) => {
                     const isStartOpen = activeDropdown?.dayIdx === dayIdx && activeDropdown?.slotIdx === slotIdx && activeDropdown?.type === "start";
                     const isEndOpen = activeDropdown?.dayIdx === dayIdx && activeDropdown?.slotIdx === slotIdx && activeDropdown?.type === "end";
 
                     return (
-                      <div key={slotIdx} className="flex items-center gap-2.5">
+                      <div key={slotIdx} className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                         {/* Custom Time slot Start Trigger */}
                         <div className="relative">
                           <button

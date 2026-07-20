@@ -207,19 +207,11 @@ export default function BookingsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Title Header */}
-      <div className={clsx('flex', 'justify-between', 'items-center', 'bg-white', 'border', 'border-[#E4E1D4]', 'rounded-2xl', 'p-6', 'shadow-[3px_3px_0_rgba(23,22,20,0.08)]')}>
-        <div>
-          <h3 className={clsx('font-cal-sans', 'text-xl', 'font-bold', 'text-[#171614]', 'uppercase', 'tracking-wider')}>
-            Bookings List
-          </h3>
-          <p className={clsx('text-xs', 'font-semibold', 'text-[#2B2A27]/60', 'mt-1')}>
-            View all appointments booked by guests on your scheduling links.
-          </p>
-        </div>
+      {/* Refresh bar */}
+      <div className="flex justify-end">
         <button
           onClick={() => fetchBookings(true)}
-          className={clsx('p-2', 'border', 'border-[#E4E1D4]', 'rounded-xl', 'hover:border-[#171614]', 'hover:bg-[#FDFBF2]', 'transition-all', 'cursor-pointer')}
+          className={clsx('p-2', 'border', 'border-[#E4E1D4]', 'rounded-xl', 'hover:border-[#171614]', 'hover:bg-[#FDFBF2]', 'bg-white', 'transition-all', 'cursor-pointer')}
           title="Refresh"
         >
           <RefreshCw className={clsx('w-4', 'h-4', 'text-[#171614]', isManualRefreshing && 'animate-spin')} />

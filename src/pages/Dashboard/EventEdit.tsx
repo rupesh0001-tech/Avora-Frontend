@@ -442,10 +442,10 @@ export function EventEditPage() {
       </header>
 
       {/* Main composition container */}
-      <div className={clsx('flex-1', 'flex', 'overflow-hidden')}>
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
         
         {/* Left inner sidebar */}
-        <aside className={clsx('w-64', 'border-r', 'border-[#E4E1D4]', 'bg-white', 'p-4', 'space-y-1.5', 'overflow-y-auto')}>
+        <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r border-[#E4E1D4] bg-white p-4 flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-x-visible md:overflow-y-auto shrink-0 no-scrollbar">
           {sidebarTabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -453,18 +453,18 @@ export function EventEditPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-left text-xs font-bold border transition-all cursor-pointer ${
+                className={`flex-shrink-0 flex items-center gap-2.5 px-4 py-3 rounded-xl text-left text-xs font-bold border transition-all cursor-pointer w-auto md:w-full ${
                   isActive
                     ? "bg-[#7CEFC0] text-[#171614] border-[#171614]/15 translate-x-[-1px] translate-y-[-1px] shadow-[2px_2px_0_rgba(23,22,20,0.08)]"
                     : "text-[#2B2A27] border-transparent hover:border-[#171614]/15 hover:bg-[#FDFBF2]"
                 }`}
               >
-                <span className={clsx('flex', 'items-center', 'gap-3')}>
-                  <Icon className={clsx('w-4', 'h-4', 'shrink-0', 'text-[#171614]')} />
+                <span className="flex items-center gap-3">
+                  <Icon className="w-4 h-4 shrink-0 text-[#171614]" />
                   {tab.name}
                 </span>
                 {tab.comingSoon && (
-                  <span className={clsx('text-[9px]', 'bg-[#E4E1D4]/60', 'border', 'border-[#171614]/10', 'text-[#171614]/70', 'px-1.5', 'py-0.5', 'rounded-md', 'font-bold', 'uppercase', 'tracking-wider', 'scale-95')}>
+                  <span className="text-[9px] bg-[#E4E1D4]/60 border border-[#171614]/10 text-[#171614]/70 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider scale-95">
                     Soon
                   </span>
                 )}

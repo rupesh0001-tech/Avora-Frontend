@@ -1,12 +1,16 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { UserButton } from "@clerk/react";
-import { Clock, Calendar, LayoutDashboard, Settings, CalendarDays, BarChart3 } from "lucide-react";
+import { Clock, Calendar, LayoutDashboard, Settings, CalendarDays, BarChart3, X } from "lucide-react";
 import { Logo } from "../ui/Logo";
 import clsx from "clsx";
 
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
 
-export function Sidebar() {
+export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const location = useLocation();
 
   const navItems = [
@@ -19,11 +23,21 @@ export function Sidebar() {
   ];
 
   return (
-    <aside className={clsx('w-64', 'border-r', 'border-[#E4E1D4]', 'bg-white', 'flex', 'flex-col', 'justify-between')}>
+    <aside className={clsx(
+      'w-64', 'border-r', 'border-[#E4E1D4]', 'bg-white', 'flex', 'flex-col', 'justify-between',
+      'fixed inset-y-0 left-0 z-50 md:relative md:translate-x-0 transition-transform duration-300 ease-in-out',
+      isOpen ? 'translate-x-0' : '-translate-x-full'
+    )}>
       <div>
         {/* Logo container with thin bottom border */}
-        <div className={clsx('h-16', 'border-b', 'border-[#E4E1D4]', 'bg-[#F3E75B]', 'flex', 'items-center', 'px-6')}>
+        <div className={clsx('h-16', 'border-b', 'border-[#E4E1D4]', 'bg-[#F3E75B]', 'flex', 'items-center', 'justify-between', 'px-6')}>
           <Logo />
+          <button
+            onClick={onClose}
+            className="md:hidden p-1.5 hover:bg-black/5 rounded-lg text-[#171614] cursor-pointer"
+          >
+            <X className="w-5 h-5 stroke-[2.5]" />
+          </button>
         </div>
         <nav className={clsx('p-4', 'space-y-2.5')}>
           {navItems.map((item) => {
