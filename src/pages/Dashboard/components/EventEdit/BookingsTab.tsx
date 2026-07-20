@@ -198,7 +198,7 @@ export function BookingsTab({ eventTypeId }: BookingsTabProps) {
       {/* Title Header */}
       <div className="flex justify-between items-center bg-white border border-[#E4E1D4] rounded-2xl p-6 shadow-[3px_3px_0_rgba(23,22,20,0.08)]">
         <div>
-          <h3 className="font-cal-sans text-xl font-bold text-[#171614] uppercase tracking-wide">
+          <h3 className="font-cal-sans text-xl font-bold text-[#171614] uppercase tracking-wider">
             Event Bookings
           </h3>
           <p className="text-xs text-[#2B2A27]/60 font-semibold mt-1">
@@ -226,7 +226,7 @@ export function BookingsTab({ eventTypeId }: BookingsTabProps) {
           
           {/* Search bar */}
           <div className="space-y-1 col-span-1 sm:col-span-2 flex flex-col justify-end">
-            <label className="block text-[10px] font-extrabold uppercase text-[#2B2A27]/55 tracking-wider">Search</label>
+            <label className="block text-xs font-bold text-[#171614] uppercase tracking-wider">Search</label>
             <div className="relative w-full h-9">
               <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search className="w-4 h-4 text-[#2B2A27]/40" />
@@ -243,7 +243,7 @@ export function BookingsTab({ eventTypeId }: BookingsTabProps) {
 
           {/* Date Picker Start */}
           <div className="space-y-1 flex flex-col justify-end">
-            <label className="block text-[10px] font-extrabold uppercase text-[#2B2A27]/55 tracking-wider">From Date</label>
+            <label className="block text-xs font-bold text-[#171614] uppercase tracking-wider">From Date</label>
             <input
               type="date"
               value={startDate}
@@ -254,7 +254,7 @@ export function BookingsTab({ eventTypeId }: BookingsTabProps) {
 
           {/* Date Picker End */}
           <div className="space-y-1 flex flex-col justify-end">
-            <label className="block text-[10px] font-extrabold uppercase text-[#2B2A27]/55 tracking-wider">To Date</label>
+            <label className="block text-xs font-bold text-[#171614] uppercase tracking-wider">To Date</label>
             <input
               type="date"
               value={endDate}
@@ -265,7 +265,7 @@ export function BookingsTab({ eventTypeId }: BookingsTabProps) {
 
           {/* Time Selector */}
           <div className="space-y-1 flex flex-col justify-end">
-            <label className="block text-[10px] font-extrabold uppercase text-[#2B2A27]/55 tracking-wider">Time of Day</label>
+            <label className="block text-xs font-bold text-[#171614] uppercase tracking-wider">Time of Day</label>
             <Select
               value={timeOfDay}
               onChange={(val) => setTimeOfDay(val)}

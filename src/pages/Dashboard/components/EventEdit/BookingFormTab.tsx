@@ -79,7 +79,7 @@ export function BookingFormTab({
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-1.5">
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-[#171614]">Question Label</label>
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#171614]">Question Label</label>
               <input
                 type="text"
                 value={newFieldLabel}
@@ -89,7 +89,7 @@ export function BookingFormTab({
               />
             </div>
             <div className="space-y-1.5">
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-[#171614]">Input Type</label>
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#171614]">Input Type</label>
               <Select
                 value={newFieldType}
                 onChange={(val) => setNewFieldType(val)}
@@ -103,7 +103,7 @@ export function BookingFormTab({
               />
             </div>
             <div className="space-y-1.5">
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-[#171614]">Status</label>
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#171614]">Status</label>
               <Select
                 value={newFieldStatus}
                 onChange={(val) => setNewFieldStatus(val as any)}

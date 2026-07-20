@@ -136,7 +136,7 @@ export default function AvailabilityPage() {
       {/* Title Header */}
       <div className="flex justify-between items-center bg-white border border-[#E4E1D4] rounded-2xl p-6 shadow-[3px_3px_0_rgba(23,22,20,0.08)]">
         <div>
-          <h3 className="font-cal-sans text-xl font-bold text-[#171614] uppercase tracking-wide">
+          <h3 className="font-cal-sans text-xl font-bold text-[#171614] uppercase tracking-wider">
             General Availability
           </h3>
           <p className="text-xs font-semibold text-[#2B2A27]/60 mt-1">

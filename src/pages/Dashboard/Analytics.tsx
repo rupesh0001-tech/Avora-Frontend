@@ -262,8 +262,17 @@ export default function AnalyticsPage({ eventTypeId, showTitle = true }: Analyti
   return (
     <div className="space-y-6 max-w-7xl mx-auto p-1 font-sans no-scrollbar">
       {/* Top Banner Row */}
-      {showTitle ? (
-        <div className="flex justify-end items-center gap-3 border-b border-[#E4E1D4] pb-5">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white border border-[#E4E1D4] rounded-2xl p-6 shadow-[3px_3px_0_rgba(23,22,20,0.08)]">
+        <div>
+          <h3 className="font-cal-sans text-xl font-bold text-[#171614] uppercase tracking-wider">
+            {showTitle ? "Analytics Overview" : "Analytics"}
+          </h3>
+          <p className="text-xs text-[#2B2A27]/60 font-semibold mt-1">
+            Track metrics, payment revenues, and booking schedules.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3 w-full sm:w-auto">
           <Select
             value={dateRange}
             onChange={(val) => setDateRange(val)}
@@ -281,26 +290,7 @@ export default function AnalyticsPage({ eventTypeId, showTitle = true }: Analyti
             <RefreshCw className={clsx("w-4.5 h-4.5", isRefreshing && "animate-spin")} />
           </button>
         </div>
-      ) : (
-        <div className="flex justify-end items-center gap-3 border-b border-[#E4E1D4]/40 pb-3">
-          <Select
-            value={dateRange}
-            onChange={(val) => setDateRange(val)}
-            options={dateRangeOptions}
-            size="sm"
-            className="w-40"
-          />
-
-          <button
-            onClick={() => fetchData(true)}
-            disabled={isRefreshing}
-            className="p-2 border border-[#E4E1D4] hover:border-[#171614] rounded-xl bg-white hover:bg-[#FDFBF2] active:scale-95 transition-all text-[#171614] inline-flex items-center justify-center cursor-pointer"
-            title="Refresh statistics"
-          >
-            <RefreshCw className={clsx("w-4.5 h-4.5", isRefreshing && "animate-spin")} />
-          </button>
-        </div>
-      )}
+      </div>
 
       {errorMsg && (
         <div className="flex items-center gap-2.5 p-4 border border-[#E5484D]/30 bg-[#E5484D]/10 text-[#E5484D] rounded-2xl text-xs font-semibold">
