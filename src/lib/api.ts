@@ -7,7 +7,9 @@ export function useApi() {
   const getClient = async () => {
     const token = await getToken();
     return axios.create({
-      baseURL: "http://localhost:5001/api",
+      baseURL:
+        (typeof window !== "undefined" && (window as any).process?.env?.VITE_API_URL) ||
+        "http://localhost:5001/api",
       headers: {
         Authorization: token ? `Bearer ${token}` : "",
       },

@@ -6,6 +6,10 @@ import { Button } from "../../components/ui/Button";
 import { Select } from "../../components/ui/Select";
 import clsx from "clsx";
 
+const API_BASE: string =
+  (typeof window !== "undefined" && (window as any).process?.env?.VITE_API_URL) ||
+  "http://localhost:5001/api";
+
 interface HostDetails {
   firstName: string | null;
   lastName: string | null;
@@ -131,6 +135,7 @@ export default function BookingPage({ action }: { action?: "cancel" | "reschedul
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successBooking, setSuccessBooking] = useState<any>(null);
+  const [successBookingToken, setSuccessBookingToken] = useState("");
 
   // Load Razorpay Script dynamically on mount
   useEffect(() => {
@@ -155,7 +160,8 @@ export default function BookingPage({ action }: { action?: "cancel" | "reschedul
         
         if (bookingId) {
           // Public details for reschedule/cancel
-          const res = await axios.get(`http://localhost:5001/api/bookings/${bookingId}/public`);
+          const tokenParam = searchParams.get("token") || "";
+          const res = await axios.get(`${API_BASE}/bookings/${bookingId}/public?token=${tokenParam}`);
           const booking = res.data.booking;
           setOriginalBooking(booking);
           
@@ -200,7 +206,7 @@ export default function BookingPage({ action }: { action?: "cancel" | "reschedul
         } else {
           // Standard booking page
           if (!paramUsername || !paramSlug) return;
-          const res = await axios.get(`http://localhost:5001/api/bookings/public/${paramUsername}/${paramSlug}`);
+          const res = await axios.get(`${API_BASE}/bookings/public/${paramUsername}/${paramSlug}`);
           fetchedHost = res.data.host;
           fetchedEventType = res.data.eventType;
           
@@ -292,6 +298,7 @@ export default function BookingPage({ action }: { action?: "cancel" | "reschedul
             if (savedData.selectedTime) setSelectedTime(savedData.selectedTime);
             if (savedData.attendeeName) setAttendeeName(savedData.attendeeName);
             if (savedData.attendeeEmail) setAttendeeEmail(savedData.attendeeEmail);
+            if (savedData.token) setSuccessBookingToken(savedData.token);
             setStep("success");
             return;
           } catch (e) {
@@ -345,7 +352,7 @@ export default function BookingPage({ action }: { action?: "cancel" | "reschedul
       if (!username || !slug || !selectedDate) return;
       try {
         const dateStr = localDateStr(selectedDate);
-        const res = await axios.get(`http://localhost:5001/api/bookings/public/${username}/${slug}?date=${dateStr}&timezone=${attendeeTimezone}`);
+        const res = await axios.get(`${API_BASE}/bookings/public/${username}/${slug}?date=${dateStr}&timezone=${attendeeTimezone}`);
         setBookedSlots(res.data.bookedSlots || []);
       } catch (err) {
         console.error("Failed to load booked slots for date:", err);
@@ -761,8 +768,10 @@ export default function BookingPage({ action }: { action?: "cancel" | "reschedul
 
     try {
       if (action === "reschedule") {
-        const res = await axios.post(`http://localhost:5001/api/bookings/${bookingId}/reschedule`, {
+        const tokenParam = searchParams.get("token") || "";
+        const res = await axios.post(`${API_BASE}/bookings/${bookingId}/reschedule`, {
           newStartTime: ISOstartTime,
+          token: tokenParam,
         });
 
         // Clear local storage
@@ -773,11 +782,14 @@ export default function BookingPage({ action }: { action?: "cancel" | "reschedul
 
         const booking = res.data.booking;
         setSuccessBooking(booking);
+        const successToken = searchParams.get("token") || "";
+        setSuccessBookingToken(successToken);
         const successData = {
           successBooking: booking,
           selectedTime,
           attendeeName,
           attendeeEmail,
+          token: successToken,
         };
         sessionStorage.setItem(`booking_success_reschedule_${bookingId}`, JSON.stringify(successData));
         setSearchParams({ step: "3" }, { replace: true });
@@ -786,7 +798,7 @@ export default function BookingPage({ action }: { action?: "cancel" | "reschedul
         return;
       }
 
-      const res = await axios.post("http://localhost:5001/api/bookings", {
+      const res = await axios.post(`${API_BASE}/bookings`, {
         eventTypeId: eventType.id,
         startTime: ISOstartTime,
         attendeeName,
@@ -817,7 +829,7 @@ export default function BookingPage({ action }: { action?: "cancel" | "reschedul
           handler: async (response: any) => {
             try {
               setIsSubmitting(true);
-              const verifyRes = await axios.post("http://localhost:5001/api/bookings/payment/verify", {
+              const verifyRes = await axios.post(`${API_BASE}/bookings/payment/verify`, {
                 bookingId: res.data.booking.id,
                 razorpayOrderId: response.razorpay_order_id,
                 razorpayPaymentId: response.razorpay_payment_id,
@@ -825,11 +837,14 @@ export default function BookingPage({ action }: { action?: "cancel" | "reschedul
               });
               const booking = verifyRes.data.booking;
               setSuccessBooking(booking);
+              const tokenVal = res.data.token || "";
+              setSuccessBookingToken(tokenVal);
               const successData = {
                 successBooking: booking,
                 selectedTime,
                 attendeeName,
-                attendeeEmail
+                attendeeEmail,
+                token: tokenVal,
               };
               sessionStorage.setItem(`booking_success_${username}_${slug}`, JSON.stringify(successData));
               setSearchParams({ step: "3" }, { replace: true });
@@ -861,11 +876,14 @@ export default function BookingPage({ action }: { action?: "cancel" | "reschedul
         // Free booking directly transitions to success step
         const booking = res.data.booking;
         setSuccessBooking(booking);
+        const tokenVal = res.data.token || "";
+        setSuccessBookingToken(tokenVal);
         const successData = {
           successBooking: booking,
           selectedTime,
           attendeeName,
-          attendeeEmail
+          attendeeEmail,
+          token: tokenVal,
         };
         sessionStorage.setItem(`booking_success_${username}_${slug}`, JSON.stringify(successData));
         setSearchParams({ step: "3" }, { replace: true });
@@ -886,8 +904,10 @@ export default function BookingPage({ action }: { action?: "cancel" | "reschedul
     setErrorMsg("");
 
     try {
-      await axios.post(`http://localhost:5001/api/bookings/${bookingId}/cancel`, {
+      const tokenParam = searchParams.get("token") || "";
+      await axios.post(`${API_BASE}/bookings/${bookingId}/cancel`, {
         reason: cancelReason,
+        token: tokenParam,
       });
       setStep("cancelled");
     } catch (err: any) {
@@ -1342,7 +1362,7 @@ export default function BookingPage({ action }: { action?: "cancel" | "reschedul
                 <div className="flex gap-3 w-full max-w-sm pt-2">
                   {eventType.rescheduleEnabled !== false && (
                     <Button
-                      onClick={() => navigate(`/booking/${successBooking.id}/reschedule`)}
+                      onClick={() => navigate(`/booking/${successBooking.id}/reschedule?token=${successBookingToken}`)}
                       variant="secondary"
                       className="flex-1 text-xs"
                       size="sm"
@@ -1352,7 +1372,7 @@ export default function BookingPage({ action }: { action?: "cancel" | "reschedul
                   )}
                   {eventType.cancelEnabled !== false && (
                     <Button
-                      onClick={() => navigate(`/booking/${successBooking.id}/cancel`)}
+                      onClick={() => navigate(`/booking/${successBooking.id}/cancel?token=${successBookingToken}`)}
                       variant="ghost"
                       className="flex-1 text-xs border border-[#E5484D] text-[#E5484D] bg-white hover:bg-[#E5484D]/5"
                       size="sm"

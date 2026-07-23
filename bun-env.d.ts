@@ -17,3 +17,14 @@ declare module "*.module.css" {
   const classes: { readonly [key: string]: string };
   export = classes;
 }
+
+interface ImportMetaEnv {
+  /** Clerk auth publishable key */
+  readonly VITE_CLERK_PUBLISHABLE_KEY?: string;
+  /** Backend API base URL — e.g. http://localhost:5001/api */
+  readonly VITE_API_URL?: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
